@@ -1,10 +1,9 @@
 let state = 0;
+let score =0;
+
 //loading images
-
-
 let playerImage, enemyImage, temp;
 let groupAlien = [];
-
 function preload(){
     playerImage  = loadImage("images/player.png");
     enemyImage = loadImage("images/enemy.png");
@@ -20,9 +19,7 @@ class Player{
         this.image = image;
     }
 }
-
-    
-      
+     
 
 //Enemy blueprint
 class Alien{
