@@ -1,15 +1,22 @@
 let state = 0;
 let score =0;
-
 //loading images
-let playerImage, enemyImage, temp;
+let playerImage, enemyImage, temp, player, bullet, bulletImage;
 let groupAlien = [];
+let groupBullet = [];
 function preload(){
     playerImage  = loadImage("images/player.png");
     enemyImage = loadImage("images/enemy.png");
+    bulletImage= loadImage("images/bullet.png");
 }
  
-
+class Bullet{ 
+    constructor(x, y, image) {
+        this.xPos = x;
+        this.yPos = y;
+        this.image = image;
+    }
+}
 
 //Player Blueprint
 class Player{ 
@@ -38,8 +45,9 @@ function setup(){
         temp = new Alien(i*75, 20, enemyImage);
         groupAlien.push(temp);
     }
+    player = new Player(250, 400, playerImage);
 }
-let player = new Player(250, 400, playerImage);
+
 function draw(){
     if(state==0){
         fill(255, 255, 255);
@@ -52,8 +60,7 @@ function draw(){
     
     if(state==1){
         background(0);
-        fill(0, 255, 0);
-        rect(player.xPos, player.yPos, 50, 50);
+        image(player.image, player.xPos, player.yPos, 50, 50);
         for(let i=0; i<groupAlien.length; i++){
         image(groupAlien[i].image, groupAlien[i].xPos, groupAlien[i].yPos, 50, 50);
         groupAlien[i].yPos += 3;
@@ -73,6 +80,22 @@ function draw(){
            if(keyIsDown(UP_ARROW)){
             player.yPos -= 3;
            }
+    
+          if(keyPressed(36)){
+        for(let i=0; i<5; i++){
+            bullet = new Bullet(player.xPos,player.yPos,bulletImage);
+            groupBullet.push(bullet);}
+            for(let i=0; i<groupBullet.length; i++){
+                image(groupBullet[i].image, groupBullet[i].xPos, groupBullet[i].yPos, 50, 50);
+                groupBullet[i].yPos -= 3;
+                }
+            }
+          
+    
+          
+        //    if(bullet.yPos==0){
+
+        //    }
 
 //stae 3 = game over screen
     if (state == 3){
