@@ -123,7 +123,7 @@ function draw(){
                 console.log(lives);
                 return lives;
             }  
-        
+            
         }
         if(lives<=0){
            
@@ -131,9 +131,6 @@ function draw(){
             state=3;
            
         }
-    }
-        //Players Controls
-
         if(keyIsDown(LEFT_ARROW)){
 
             player.xPos -= 5;   
@@ -176,19 +173,13 @@ function draw(){
                 }
 
         }
-          
-    
-          
-        //    if(bullet.yPos==0){
+    }
 
-        //    }
 
 //stae 3 = game over screen
     if (state == 3){
         fill(0);
-        text("lives", 950, 20);
-
-        text(lives, 980,20);
+      
         rect (200,300,100,100);
         rect(200,400,100,100);
         fill(255, 255, 255);
