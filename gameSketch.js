@@ -12,6 +12,13 @@ let lastFrameTime = 0; // Track when last frame was shown
 let frameCounter = 0; // For FPS throttling
 let flameConeGraphic; // Pre-rendered flame cone
 let flameConeFallbackGraphic; // Pre-rendered fallback cone
+let isFireMode = false; // Track if player is in fire mode
+let fireModeStartTime = 0; // Track when fire mode started
+let fireModeDuration = 30000; // 30 seconds in milliseconds
+let isIceMode = false; // Track if player is in ice mode
+let iceModeStartTime = 0; // Track when ice mode started
+let iceModeDuration = 30000; // 30 seconds in milliseconds
+let groupIceBullet = []; // Array for ice bullets
 //loading images
 let playerImage,
   enemyImage,
@@ -36,7 +43,8 @@ let angelImage,
   ice2Image,
   player1Image,
   repairImage,
-  lifeImage;
+  lifeImage,
+  iceExploImage;
 
 function preload() {
   playerImage = loadImage("images/player/player.png");
@@ -52,6 +60,7 @@ function preload() {
   repairImage = loadImage("images/pick-ups/repair (1).png");
   lifeImage = loadImage("images/pick-ups/life (1).png");
   flameImage = loadImage("images/bullets/flame (1).png");
+  iceExploImage = loadImage("images/bullets/ice-explo (1).png");
 }
 // blueprints for character alien and bullet
 class Bullet {
@@ -96,6 +105,99 @@ class Bullet {
       this.yPos < alien.yPos + alien.size &&
       this.yPos + this.size > alien.yPos
     );
+  }
+}
+
+class IceBullet {
+  constructor(x, y, angle, image) {
+    this.xPos = x;
+    this.yPos = y;
+    this.image = image;
+    this.speed = 4; // Slightly slower than regular bullets
+    this.size = 50;
+    this.creationTime = millis();
+    this.lifeTime = 1000; // 1 second
+    this.hasExploded = false;
+    this.explosionSize = 200; // 4 times the original size (50 * 4 = 200)
+    this.explosionStartTime = 0; // Track when explosion started
+    this.explosionDuration = 500; // How long explosion lasts
+
+    // Calculate direction based on angle, matching ship's rotation
+    this.directionX = cos(angle - PI / 2);
+    this.directionY = sin(angle - PI / 2);
+  }
+
+  move() {
+    if (!this.hasExploded) {
+      this.xPos += this.directionX * this.speed;
+      this.yPos += this.directionY * this.speed;
+    }
+  }
+
+  draw() {
+    if (!this.hasExploded) {
+      push();
+      translate(this.xPos + this.size / 2, this.yPos + this.size / 2);
+      rotate(atan2(this.directionY, this.directionX) + PI / 2);
+      image(this.image, -this.size / 2, -this.size / 2, this.size, this.size);
+      pop();
+    } else {
+      // Draw explosion centered on the original bullet position
+      push();
+      translate(this.xPos + this.size / 2, this.yPos + this.size / 2);
+      image(
+        this.image,
+        -this.explosionSize / 2,
+        -this.explosionSize / 2,
+        this.explosionSize,
+        this.explosionSize
+      );
+      pop();
+    }
+  }
+
+  isOffScreen() {
+    return (
+      this.xPos < -100 ||
+      this.xPos > width + 100 ||
+      this.yPos < -100 ||
+      this.yPos > height + 100
+    );
+  }
+
+  shouldExplode() {
+    return millis() - this.creationTime >= this.lifeTime && !this.hasExploded;
+  }
+
+  explode() {
+    this.hasExploded = true;
+    this.explosionStartTime = millis();
+  }
+
+  shouldRemove() {
+    return (
+      this.hasExploded &&
+      millis() - this.explosionStartTime >= this.explosionDuration
+    );
+  }
+
+  checkExplosionCollision(alien) {
+    if (!this.hasExploded) return false;
+
+    // Calculate explosion center (same as original bullet center)
+    let explosionCenterX = this.xPos + this.size / 2;
+    let explosionCenterY = this.yPos + this.size / 2;
+
+    // Calculate alien center
+    let alienCenterX = alien.xPos + alien.size / 2;
+    let alienCenterY = alien.yPos + alien.size / 2;
+
+    // Check if alien is within explosion radius
+    let dx = alienCenterX - explosionCenterX;
+    let dy = alienCenterY - explosionCenterY;
+    let distance = Math.sqrt(dx * dx + dy * dy);
+
+    return distance < this.explosionSize / 2;
   }
 }
 
@@ -366,12 +468,16 @@ function spawnPickup(x, y) {
 function applyPickupEffect(type) {
   switch (type) {
     case "fire-up":
-      // Change player ship to fire2 image
+      // Change player ship to fire2 image and enable fire mode
       player.image = fire2Image;
+      isFireMode = true;
+      fireModeStartTime = millis();
       break;
     case "ice-up":
-      // Change player ship to ice2 image
+      // Change player ship to ice2 image and enable ice mode
       player.image = ice2Image;
+      isIceMode = true;
+      iceModeStartTime = millis();
       break;
     case "life":
       // Add life pickup to inventory (max 1)
@@ -483,6 +589,46 @@ function draw() {
       image(lifeImage, 850, 30, 30, 30);
     }
 
+    // Display fire mode status
+    if (isFireMode) {
+      // Check if fire mode has expired
+      let currentTime = millis();
+      if (currentTime - fireModeStartTime >= fireModeDuration) {
+        isFireMode = false;
+        player.image = playerImage; // Reset to normal player image
+        console.log("Fire mode expired!");
+      } else {
+        // Calculate remaining time
+        let remainingTime = Math.ceil(
+          (fireModeDuration - (currentTime - fireModeStartTime)) / 1000
+        );
+        text("FIRE MODE: " + remainingTime + "s", 950, 60);
+        fill(255, 100, 0);
+        text("Press F for flamethrower", 950, 80);
+        fill(255, 255, 255);
+      }
+    }
+
+    // Display ice mode status
+    if (isIceMode) {
+      // Check if ice mode has expired
+      let currentTime = millis();
+      if (currentTime - iceModeStartTime >= iceModeDuration) {
+        isIceMode = false;
+        player.image = playerImage; // Reset to normal player image
+        console.log("Ice mode expired!");
+      } else {
+        // Calculate remaining time
+        let remainingTime = Math.ceil(
+          (iceModeDuration - (currentTime - iceModeStartTime)) / 1000
+        );
+        text("ICE MODE: " + remainingTime + "s", 950, 100);
+        fill(100, 150, 255);
+        text("Press E for ice bullet", 950, 120);
+        fill(255, 255, 255);
+      }
+    }
+
     if (player) {
       player.updateRotation();
       player.draw();
@@ -531,6 +677,10 @@ function draw() {
             lives = 3; // Restore to full health
             lifePickupHeld = 0; // Use the life pickup
           } else {
+            // Clear all bullets when game ends
+            groupBullet = [];
+            groupEnemyBullet = [];
+            groupIceBullet = [];
             state = 3; // Game over
           }
         }
@@ -567,17 +717,11 @@ function draw() {
     if (mouseIsPressed && mouseButton === LEFT) {
       let currentTime = millis();
       if (currentTime - lastShotTime >= shootCooldown) {
-        // Calculate bullet spawn position (same as flame cone position)
+        // Calculate bullet spawn position at ship's nose
         let bulletSpawnX =
-          player.xPos +
-          player.size / 2 +
-          (-player.size - 9) * cos(player.rotation) -
-          -player.size * 2.5 * sin(player.rotation);
+          player.xPos + player.size / 2 + 25 * cos(player.rotation);
         let bulletSpawnY =
-          player.yPos +
-          player.size / 2 +
-          (-player.size - 9) * sin(player.rotation) +
-          -player.size * 2.5 * cos(player.rotation);
+          player.yPos + player.size / 2 + 25 * sin(player.rotation);
 
         bullet = new Bullet(
           bulletSpawnX, // Use calculated spawn position
@@ -698,6 +842,46 @@ function draw() {
         );
       }
     }
+
+    // Update and draw ice bullets
+    for (let i = groupIceBullet.length - 1; i >= 0; i--) {
+      if (!groupIceBullet[i]) {
+        groupIceBullet.splice(i, 1);
+        continue;
+      }
+
+      groupIceBullet[i].move();
+      groupIceBullet[i].draw();
+
+      // Check if ice bullet should explode
+      if (groupIceBullet[i].shouldExplode()) {
+        groupIceBullet[i].explode();
+      }
+
+      // Check for explosion collisions with aliens (only after explosion)
+      if (groupIceBullet[i].hasExploded) {
+        for (let j = groupAlien.length - 1; j >= 0; j--) {
+          if (!groupAlien[j]) continue;
+
+          if (groupIceBullet[i].checkExplosionCollision(groupAlien[j])) {
+            // Spawn pickup at enemy location before removing it
+            spawnPickup(groupAlien[j].xPos, groupAlien[j].yPos);
+
+            // Remove the alien
+            groupAlien.splice(j, 1);
+            score += 100; // Add points for hitting an alien
+          }
+        }
+      }
+
+      // Remove ice bullets that are off screen or have finished exploding
+      if (
+        groupIceBullet[i] &&
+        (groupIceBullet[i].isOffScreen() || groupIceBullet[i].shouldRemove())
+      ) {
+        groupIceBullet.splice(i, 1);
+      }
+    }
   }
 
   //stae 3 = game over screen
@@ -753,6 +937,10 @@ function draw() {
             lives = 3; // Restore to full health
             lifePickupHeld = 0; // Use the life pickup
           } else {
+            // Clear all bullets when game ends
+            groupBullet = [];
+            groupEnemyBullet = [];
+            groupIceBullet = [];
             state = 3; // Game over
           }
         }
@@ -792,8 +980,13 @@ function mouseClicked() {
     isFiring = false; // Reset flame state
     currentFrame = 0; // Reset flame animation
     frameCounter = 0; // Reset frame counter
+    isFireMode = false; // Reset fire mode
+    fireModeStartTime = 0; // Reset fire mode timer
+    isIceMode = false; // Reset ice mode
+    iceModeStartTime = 0; // Reset ice mode timer
     groupEnemyBullet = []; // Clear enemy bullets
     groupPickup = []; // Clear pickups
+    groupIceBullet = []; // Clear ice bullets
     spawnAliens();
   }
 
@@ -812,8 +1005,13 @@ function mouseClicked() {
     isFiring = false; // Reset flame state
     currentFrame = 0; // Reset flame animation
     frameCounter = 0; // Reset frame counter
+    isFireMode = false; // Reset fire mode
+    fireModeStartTime = 0; // Reset fire mode timer
+    isIceMode = false; // Reset ice mode
+    iceModeStartTime = 0; // Reset ice mode timer
     groupEnemyBullet = []; // Clear enemy bullets
     groupPickup = []; // Clear pickups
+    groupIceBullet = []; // Clear ice bullets
   }
 
   //click START button to begin game
@@ -832,8 +1030,13 @@ function mouseClicked() {
     isFiring = false; // Reset flame state
     currentFrame = 0; // Reset flame animation
     frameCounter = 0; // Reset frame counter
+    isFireMode = false; // Reset fire mode
+    fireModeStartTime = 0; // Reset fire mode timer
+    isIceMode = false; // Reset ice mode
+    iceModeStartTime = 0; // Reset ice mode timer
     groupEnemyBullet = []; // Clear enemy bullets
     groupPickup = []; // Clear pickups
+    groupIceBullet = []; // Clear ice bullets
     state = 1;
     spawnAliens();
   }
@@ -844,6 +1047,8 @@ function resetGame() {
   groupBullet = [];
   // Clear all enemy bullets
   groupEnemyBullet = [];
+  // Clear all ice bullets
+  groupIceBullet = [];
   // Reset player position and rotation
   player = new Player(250, 400, playerImage);
   // Clear all aliens
@@ -858,6 +1063,14 @@ function resetGame() {
   frameCounter = 0;
   // Reset life pickup held
   lifePickupHeld = 0;
+  // Reset fire mode
+  isFireMode = false;
+  // Reset fire mode timer
+  fireModeStartTime = 0;
+  // Reset ice mode
+  isIceMode = false;
+  // Reset ice mode timer
+  iceModeStartTime = 0;
   // Reset score
   score = 0;
   // Reset game state
@@ -878,12 +1091,35 @@ function mousePressed() {
 
 function keyPressed() {
   if ((state === 1 && key === "F") || key === "f") {
-    if (!isFiring) {
+    if (isFireMode && !isFiring) {
       isFiring = true;
       flameStartTime = millis();
       console.log("Flame thrower activated! Key pressed:", key);
+    } else if (!isFireMode) {
+      console.log("Flame thrower only works in fire mode!");
     } else {
       console.log("Flame thrower already active");
+    }
+  }
+
+  if ((state === 1 && key === "E") || key === "e") {
+    if (isIceMode) {
+      // Calculate bullet spawn position at ship's nose
+      let bulletSpawnX =
+        player.xPos + player.size / 2 + 25 * cos(player.rotation);
+      let bulletSpawnY =
+        player.yPos + player.size / 2 + 25 * sin(player.rotation);
+
+      let iceBullet = new IceBullet(
+        bulletSpawnX,
+        bulletSpawnY,
+        player.rotation,
+        iceExploImage
+      );
+      groupIceBullet.push(iceBullet);
+      console.log("Ice bullet fired! Key pressed:", key);
+    } else {
+      console.log("Ice bullets only work in ice mode!");
     }
   }
 }
