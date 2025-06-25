@@ -2,6 +2,16 @@ let state = 0;
 let lives = 3;
 let score = 0;
 let currentRound = 1; // Track current round
+let lifePickupHeld = 0; // Track if player has a life pickup (max 1)
+let isFiring = false; // Track if flame thrower is active
+let flameStartTime = 0; // Track when flame thrower started
+let flameDuration = 2000; // 2 seconds in milliseconds
+let currentFrame = 0; // Current frame index
+let frameRate = 8; // Frames per second for animation
+let lastFrameTime = 0; // Track when last frame was shown
+let frameCounter = 0; // For FPS throttling
+let flameConeGraphic; // Pre-rendered flame cone
+let flameConeFallbackGraphic; // Pre-rendered fallback cone
 //loading images
 let playerImage,
   enemyImage,
@@ -9,21 +19,39 @@ let playerImage,
   player,
   bullet,
   bulletImage,
-  enemyBulletImage;
+  enemyBulletImage,
+  flameImage;
 let lastShotTime = 0; // Track when the last bullet was fired
 let shootCooldown = 400; // Cooldown in milliseconds (0.4 seconds)
 
 let groupAlien = [];
 let groupBullet = [];
 let groupEnemyBullet = []; // Array for enemy bullets
+let groupPickup = []; // Array for pickups
+
+let angelImage,
+  fireUpImage,
+  fire2Image,
+  iceUpImage,
+  ice2Image,
+  player1Image,
+  repairImage,
+  lifeImage;
 
 function preload() {
-  playerImage = loadImage("images/player.png");
-
-  enemyImage = loadImage("images/enemy.png");
-
-  bulletImage = loadImage("images/bullet.png");
-  enemyBulletImage = loadImage("images/en-bullet.png");
+  playerImage = loadImage("images/player/player.png");
+  enemyImage = loadImage("images/enemies/enemy.png");
+  bulletImage = loadImage("images/bullets/bullet.png");
+  enemyBulletImage = loadImage("images/bullets/en-bullet.png");
+  angelImage = loadImage("images/player/angel (1).png");
+  fireUpImage = loadImage("images/pick-ups/fire-up (1).png");
+  fire2Image = loadImage("images/player/fire2 (1).png");
+  iceUpImage = loadImage("images/pick-ups/ice-up (1).png");
+  ice2Image = loadImage("images/player/ice2 (1).png");
+  player1Image = loadImage("images/player/player1 (1).png");
+  repairImage = loadImage("images/pick-ups/repair (1).png");
+  lifeImage = loadImage("images/pick-ups/life (1).png");
+  flameImage = loadImage("images/bullets/flame (1).png");
 }
 // blueprints for character alien and bullet
 class Bullet {
@@ -199,6 +227,39 @@ class EnemyBullet {
   }
 }
 
+class Pickup {
+  constructor(x, y, type, image) {
+    this.xPos = x;
+    this.yPos = y;
+    this.type = type; // 'fire-up', 'ice-up', 'life', 'repair'
+    this.image = image;
+    this.size = 40;
+    this.speed = 1; // Pickups fall down slowly (reduced from 2)
+  }
+
+  move() {
+    this.yPos += this.speed;
+  }
+
+  draw() {
+    image(this.image, this.xPos, this.yPos, this.size, this.size);
+  }
+
+  isOffScreen() {
+    return this.yPos > height + 50;
+  }
+
+  checkCollision(player) {
+    if (!player) return false;
+    return (
+      this.xPos < player.xPos + player.size &&
+      this.xPos + this.size > player.xPos &&
+      this.yPos < player.yPos + player.size &&
+      this.yPos + this.size > player.yPos
+    );
+  }
+}
+
 //Title screen and initilizing aliens
 function setup() {
   createCanvas(1000, 640);
@@ -208,6 +269,13 @@ function setup() {
   player = new Player(250, 400, playerImage);
 
   spawnAliens(); // Move alien spawning to a separate function
+
+  // Pre-render flame cones for better performance (only if images are loaded)
+  if (flameImage && flameImage.width) {
+    createFlameConeGraphics();
+  } else {
+    console.log("Flame image not loaded yet, will create graphics later");
+  }
 }
 
 function spawnAliens() {
@@ -217,6 +285,106 @@ function spawnAliens() {
     let randomX = random(0, width - 50);
     temp = new Alien(randomX, 20, enemyImage);
     groupAlien.push(temp);
+  }
+}
+
+function createFlameConeGraphics() {
+  // Create pre-rendered flame cone graphic
+  flameConeGraphic = createGraphics(120, 100);
+  flameConeGraphic.imageMode(CENTER);
+  flameConeGraphic.translate(60, 90); // Center the cone
+
+  // Draw flame cone pattern
+  drawFlameConeToBuffer(flameConeGraphic, 0, 0, 4, true);
+
+  // Create pre-rendered fallback cone graphic
+  flameConeFallbackGraphic = createGraphics(120, 100);
+  flameConeFallbackGraphic.imageMode(CENTER);
+  flameConeFallbackGraphic.translate(60, 90); // Center the cone
+
+  // Draw fallback cone pattern
+  drawFlameConeToBuffer(flameConeFallbackGraphic, 0, 0, 4, false);
+}
+
+function drawFlameConeToBuffer(g, x, y, layers, useImage) {
+  let flameSpacing = 15; // horizontal spacing between flames
+  let layerSpacing = 20; // vertical spacing between rows
+
+  for (let i = 0; i < layers; i++) {
+    let numFlames = 1 + i; // 1 → 2 → 3 → 4 ...
+    for (let j = 0; j < numFlames; j++) {
+      // Center flames
+      let offsetX = (j - (numFlames - 1) / 2) * flameSpacing;
+      let offsetY = -i * layerSpacing;
+
+      if (useImage && flameImage && flameImage.width) {
+        // Use flame image
+        g.image(flameImage, x + offsetX, y + offsetY, 20, 20);
+      } else {
+        // Use colored rectangle
+        g.fill(255, 100, 0, 200); // Orange color for flame
+        g.rect(x + offsetX - 10, y + offsetY - 10, 20, 20);
+      }
+    }
+  }
+}
+
+function spawnPickup(x, y) {
+  // 25% chance to spawn a pickup
+  if (random() < 0.25) {
+    let pickupType;
+
+    // If player already has a life pickup, don't spawn another one
+    if (lifePickupHeld > 0) {
+      pickupType = random(["fire-up", "ice-up", "repair"]);
+    } else {
+      pickupType = random(["fire-up", "ice-up", "life", "repair"]);
+    }
+
+    let pickupImage;
+
+    switch (pickupType) {
+      case "fire-up":
+        pickupImage = fireUpImage;
+        break;
+      case "ice-up":
+        pickupImage = iceUpImage;
+        break;
+      case "life":
+        pickupImage = lifeImage;
+        break;
+      case "repair":
+        pickupImage = repairImage;
+        break;
+    }
+
+    let pickup = new Pickup(x, y, pickupType, pickupImage);
+    groupPickup.push(pickup);
+  }
+}
+
+function applyPickupEffect(type) {
+  switch (type) {
+    case "fire-up":
+      // Change player ship to fire2 image
+      player.image = fire2Image;
+      break;
+    case "ice-up":
+      // Change player ship to ice2 image
+      player.image = ice2Image;
+      break;
+    case "life":
+      // Add life pickup to inventory (max 1)
+      if (lifePickupHeld < 1) {
+        lifePickupHeld = 1;
+      }
+      break;
+    case "repair":
+      // Only give +1 life if less than 3 lives
+      if (lives < 3) {
+        lives++;
+      }
+      break;
   }
 }
 
@@ -239,6 +407,61 @@ function draw() {
     fill(0);
     text("START", width / 2, 220);
 
+    // Draw all new sprites in a row for testing
+    let spriteY = 300;
+    let spriteSize = 64;
+    let startX = width / 2 - 5.5 * spriteSize;
+
+    // Draw all available images in a row
+    image(angelImage, startX + 0 * spriteSize, spriteY, spriteSize, spriteSize);
+    image(
+      fireUpImage,
+      startX + 1 * spriteSize,
+      spriteY,
+      spriteSize,
+      spriteSize
+    );
+    image(fire2Image, startX + 2 * spriteSize, spriteY, spriteSize, spriteSize);
+    image(iceUpImage, startX + 3 * spriteSize, spriteY, spriteSize, spriteSize);
+    image(ice2Image, startX + 4 * spriteSize, spriteY, spriteSize, spriteSize);
+    image(
+      player1Image,
+      startX + 5 * spriteSize,
+      spriteY,
+      spriteSize,
+      spriteSize
+    );
+    image(
+      repairImage,
+      startX + 6 * spriteSize,
+      spriteY,
+      spriteSize,
+      spriteSize
+    );
+    image(lifeImage, startX + 7 * spriteSize, spriteY, spriteSize, spriteSize);
+    image(
+      playerImage,
+      startX + 8 * spriteSize,
+      spriteY,
+      spriteSize,
+      spriteSize
+    );
+    image(enemyImage, startX + 9 * spriteSize, spriteY, spriteSize, spriteSize);
+    image(
+      bulletImage,
+      startX + 10 * spriteSize,
+      spriteY,
+      spriteSize,
+      spriteSize
+    );
+    image(
+      enemyBulletImage,
+      startX + 11 * spriteSize,
+      spriteY,
+      spriteSize,
+      spriteSize
+    );
+
     // Draw the player with fixed rotation
     if (player) {
       player.draw();
@@ -253,6 +476,12 @@ function draw() {
     text("Aliens: " + groupAlien.length, 20, 20);
     text("Round " + currentRound, width / 2 - 30, 20);
     text("Score: " + score, 20, 40);
+
+    // Display life pickup if held
+    if (lifePickupHeld > 0) {
+      text("Life Pickup: " + lifePickupHeld, 950, 40);
+      image(lifeImage, 850, 30, 30, 30);
+    }
 
     if (player) {
       player.updateRotation();
@@ -297,7 +526,13 @@ function draw() {
         groupAlien[i].yPos = 0;
         lives -= 1;
         if (lives <= 0) {
-          state = 3;
+          // Check if player has a life pickup to auto-restore
+          if (lifePickupHeld > 0) {
+            lives = 3; // Restore to full health
+            lifePickupHeld = 0; // Use the life pickup
+          } else {
+            state = 3; // Game over
+          }
         }
       }
     }
@@ -307,29 +542,46 @@ function draw() {
       spawnAliens();
     }
 
-    if (keyIsDown(LEFT_ARROW)) {
+    if (keyIsDown(65)) {
       player.xPos -= 5;
+      if (player.xPos < 0) player.xPos = 0; // Left boundary
     }
 
-    if (keyIsDown(RIGHT_ARROW)) {
+    if (keyIsDown(68)) {
       player.xPos += 5;
+      if (player.xPos > width - player.size) player.xPos = width - player.size; // Right boundary
     }
 
-    if (keyIsDown(DOWN_ARROW)) {
+    if (keyIsDown(83)) {
       player.yPos += 5;
+      if (player.yPos > height - player.size)
+        player.yPos = height - player.size; // Bottom boundary
     }
 
-    if (keyIsDown(UP_ARROW)) {
+    if (keyIsDown(87)) {
       player.yPos -= 5;
+      if (player.yPos < 0) player.yPos = 0; // Top boundary
     }
 
     // Handle player shooting
     if (mouseIsPressed && mouseButton === LEFT) {
       let currentTime = millis();
       if (currentTime - lastShotTime >= shootCooldown) {
+        // Calculate bullet spawn position (same as flame cone position)
+        let bulletSpawnX =
+          player.xPos +
+          player.size / 2 +
+          (-player.size - 9) * cos(player.rotation) -
+          -player.size * 2.5 * sin(player.rotation);
+        let bulletSpawnY =
+          player.yPos +
+          player.size / 2 +
+          (-player.size - 9) * sin(player.rotation) +
+          -player.size * 2.5 * cos(player.rotation);
+
         bullet = new Bullet(
-          player.xPos + player.size / 2 - 55, // 55 pixels left of center
-          player.yPos + player.size / 2, // Center of player
+          bulletSpawnX, // Use calculated spawn position
+          bulletSpawnY, // Use calculated spawn position
           player.rotation, // Use player's rotation angle
           bulletImage
         );
@@ -340,12 +592,22 @@ function draw() {
 
     // Update and draw bullets
     for (let i = groupBullet.length - 1; i >= 0; i--) {
+      if (!groupBullet[i]) {
+        groupBullet.splice(i, 1);
+        continue;
+      }
+
       groupBullet[i].move();
       groupBullet[i].draw();
 
       // Check for collisions with aliens
       for (let j = groupAlien.length - 1; j >= 0; j--) {
-        if (groupBullet[i].checkCollision(groupAlien[j])) {
+        if (!groupAlien[j]) continue;
+
+        if (groupBullet[i] && groupBullet[i].checkCollision(groupAlien[j])) {
+          // Spawn pickup at enemy location before removing it
+          spawnPickup(groupAlien[j].xPos, groupAlien[j].yPos);
+
           // Remove both the bullet and the alien
           groupBullet.splice(i, 1);
           groupAlien.splice(j, 1);
@@ -357,6 +619,83 @@ function draw() {
       // Remove bullets that are off screen
       if (groupBullet[i] && groupBullet[i].isOffScreen()) {
         groupBullet.splice(i, 1);
+      }
+    }
+
+    // Update and draw pickups
+    for (let i = groupPickup.length - 1; i >= 0; i--) {
+      if (!groupPickup[i]) continue;
+
+      groupPickup[i].move();
+      groupPickup[i].draw();
+
+      // Check collision with player
+      if (player && groupPickup[i].checkCollision(player)) {
+        // Apply pickup effect
+        applyPickupEffect(groupPickup[i].type);
+        groupPickup.splice(i, 1);
+        continue;
+      }
+
+      // Remove pickups that are off screen
+      if (groupPickup[i].isOffScreen()) {
+        groupPickup.splice(i, 1);
+      }
+    }
+
+    // Handle flame thrower (optimized with pre-rendered graphics)
+    if (isFiring) {
+      let currentTime = millis();
+      if (currentTime - flameStartTime >= flameDuration) {
+        isFiring = false;
+        console.log("Flame thrower stopped");
+      } else {
+        // Create graphics if they don't exist yet
+        if (!flameConeGraphic && flameImage && flameImage.width) {
+          createFlameConeGraphics();
+        }
+
+        // FPS throttling: only draw every 3rd frame for better performance
+        if (frameCounter % 3 === 0) {
+          // Only advance frame at the specified frame rate
+          if (currentTime - lastFrameTime > 1000 / frameRate) {
+            currentFrame = (currentFrame + 1) % 5; // Use 5 frames for animation
+            lastFrameTime = currentTime;
+          }
+
+          // Draw pre-rendered flame cone at the player's nose, oriented to player's rotation
+          push();
+          translate(
+            player.xPos + player.size / 2,
+            player.yPos + player.size / 2
+          );
+          rotate(player.rotation);
+
+          if (flameConeGraphic && flameImage && flameImage.width) {
+            image(flameConeGraphic, -player.size - 9, -player.size * 2.5);
+          } else if (flameConeFallbackGraphic) {
+            image(
+              flameConeFallbackGraphic,
+              -player.size - 9,
+              -player.size * 2.5
+            );
+          } else {
+            // Fallback: draw simple rectangle if no graphics available
+            fill(255, 100, 0, 200);
+            rect(-player.size - 19, -player.size * 2.5 - 10, 20, 20);
+          }
+
+          pop();
+        }
+        frameCounter++;
+
+        // Check flame cone collision with aliens (always check for gameplay)
+        checkFlameConeCollision(
+          player.xPos + player.size / 2,
+          player.yPos + player.size / 2,
+          player.rotation,
+          4
+        );
       }
     }
   }
@@ -409,7 +748,13 @@ function draw() {
         groupEnemyBullet.splice(i, 1);
         console.log("Player hit! Lives remaining:", lives);
         if (lives <= 0) {
-          state = 3;
+          // Check if player has a life pickup to auto-restore
+          if (lifePickupHeld > 0) {
+            lives = 3; // Restore to full health
+            lifePickupHeld = 0; // Use the life pickup
+          } else {
+            state = 3; // Game over
+          }
         }
         continue;
       }
@@ -443,7 +788,12 @@ function mouseClicked() {
     lives = 3;
     currentRound = 1;
     score = 0;
+    lifePickupHeld = 0; // Reset life pickup
+    isFiring = false; // Reset flame state
+    currentFrame = 0; // Reset flame animation
+    frameCounter = 0; // Reset frame counter
     groupEnemyBullet = []; // Clear enemy bullets
+    groupPickup = []; // Clear pickups
     spawnAliens();
   }
 
@@ -458,7 +808,12 @@ function mouseClicked() {
     state = 0;
     currentRound = 1;
     score = 0;
+    lifePickupHeld = 0; // Reset life pickup
+    isFiring = false; // Reset flame state
+    currentFrame = 0; // Reset flame animation
+    frameCounter = 0; // Reset frame counter
     groupEnemyBullet = []; // Clear enemy bullets
+    groupPickup = []; // Clear pickups
   }
 
   //click START button to begin game
@@ -473,7 +828,12 @@ function mouseClicked() {
     lives = 3;
     currentRound = 1;
     score = 0;
+    lifePickupHeld = 0; // Reset life pickup
+    isFiring = false; // Reset flame state
+    currentFrame = 0; // Reset flame animation
+    frameCounter = 0; // Reset frame counter
     groupEnemyBullet = []; // Clear enemy bullets
+    groupPickup = []; // Clear pickups
     state = 1;
     spawnAliens();
   }
@@ -482,10 +842,22 @@ function mouseClicked() {
 function resetGame() {
   // Clear all bullets
   groupBullet = [];
+  // Clear all enemy bullets
+  groupEnemyBullet = [];
   // Reset player position and rotation
   player = new Player(250, 400, playerImage);
   // Clear all aliens
   groupAlien = [];
+  // Clear all pickups
+  groupPickup = [];
+  // Reset flame state
+  isFiring = false;
+  // Reset flame animation
+  currentFrame = 0;
+  // Reset frame counter
+  frameCounter = 0;
+  // Reset life pickup held
+  lifePickupHeld = 0;
   // Reset score
   score = 0;
   // Reset game state
@@ -501,5 +873,78 @@ function mousePressed() {
   } else if (state === 3) {
     state = 0;
     resetGame();
+  }
+}
+
+function keyPressed() {
+  if ((state === 1 && key === "F") || key === "f") {
+    if (!isFiring) {
+      isFiring = true;
+      flameStartTime = millis();
+      console.log("Flame thrower activated! Key pressed:", key);
+    } else {
+      console.log("Flame thrower already active");
+    }
+  }
+}
+
+function checkFlameConeCollision(x, y, rotation, layers) {
+  // Safety check: ensure player exists
+  if (!player) return;
+
+  let flameSpacing = 15; // horizontal spacing between flames
+  let layerSpacing = 20; // vertical spacing between rows
+
+  for (let i = 0; i < layers; i++) {
+    let numFlames = 1 + i; // 1 → 2 → 3 → 4 ...
+    for (let j = 0; j < numFlames; j++) {
+      // Center flames
+      let offsetX = (j - (numFlames - 1) / 2) * flameSpacing;
+      let offsetY = -i * layerSpacing;
+
+      // Calculate flame position in world coordinates using regular rotation
+      let flameX = x + offsetX * cos(rotation) - offsetY * sin(rotation);
+      let flameY = y + offsetX * sin(rotation) + offsetY * cos(rotation);
+      let size = 20 + currentFrame * 2; // Size varies from 20 to 28
+
+      // Check collision with aliens
+      for (let k = groupAlien.length - 1; k >= 0; k--) {
+        if (groupAlien[k]) {
+          let alienX = groupAlien[k].xPos + 25; // Center of alien
+          let alienY = groupAlien[k].yPos + 25;
+          let dx = alienX - flameX;
+          let dy = alienY - flameY;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < size / 2 + 25) {
+            // 25 is alien radius
+            // Spawn pickup at enemy location before removing it
+            spawnPickup(groupAlien[k].xPos, groupAlien[k].yPos);
+
+            // Remove the alien
+            groupAlien.splice(k, 1);
+            score += 100; // Add points for hitting an alien
+            break; // Exit alien loop since this flame hit something
+          }
+        }
+      }
+
+      // Check collision with enemy bullets
+      for (let k = groupEnemyBullet.length - 1; k >= 0; k--) {
+        if (groupEnemyBullet[k]) {
+          let bulletX = groupEnemyBullet[k].xPos + 25; // Center of bullet
+          let bulletY = groupEnemyBullet[k].yPos + 25;
+          let dx = bulletX - flameX;
+          let dy = bulletY - flameY;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < size / 2 + 25) {
+            // Remove the enemy bullet
+            groupEnemyBullet.splice(k, 1);
+            // Don't break here - let the flame destroy multiple bullets
+          }
+        }
+      }
+    }
   }
 }
