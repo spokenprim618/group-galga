@@ -54,6 +54,14 @@ let laserModeDuration = 30000; // 30 seconds in milliseconds
 let isAngelMode = false; // Track if player is in angel mode
 let angelModeStartTime = 0;
 let angelModeDuration = 10000; // 10 seconds in milliseconds
+let isScrapMode = false;
+let scrapModeStartTime = 0;
+let scrapModeDuration = 30000; // 30 seconds in milliseconds
+let scrapImage, scrapShipImage, sawBladeImage;
+
+let isBetweenRounds = false;
+let betweenRoundsStartTime = 0;
+let betweenRoundsDuration = 3000; // 3 seconds in milliseconds
 
 function preload() {
   playerImage = loadImage("images/player/player.png");
@@ -72,6 +80,9 @@ function preload() {
   iceExploImage = loadImage("images/bullets/ice-explo (1).png");
   lazUpImage = loadImage("images/pick-ups/laz-up (1).png");
   lazBulletImage = loadImage("images/bullets/laz (1).png");
+  scrapImage = loadImage("images/pick-ups/scrap.png");
+  scrapShipImage = loadImage("images/player/scrap-ship.png");
+  sawBladeImage = loadImage("images/bullets/saw-blade.png");
 }
 // blueprints for character alien and bullet
 class Bullet {
@@ -384,6 +395,62 @@ class Pickup {
   }
 }
 
+class SawBladeBullet extends Bullet {
+  constructor(x, y, angle, image) {
+    super(x, y, angle, image);
+    this.bounces = 0; // Optional: track number of bounces
+    this.maxBounces = 10; // Optional: limit bounces if desired
+  }
+
+  // Override move if needed (same as Bullet)
+  move() {
+    this.xPos += this.directionX * this.speed;
+    this.yPos += this.directionY * this.speed;
+  }
+
+  // Override draw if you want a different look (optional)
+  draw() {
+    push();
+    translate(this.xPos + this.size / 2, this.yPos + this.size / 2);
+    rotate(atan2(this.directionY, this.directionX) + PI / 2);
+    image(this.image, -this.size / 2, -this.size / 2, this.size, this.size);
+    pop();
+  }
+
+  // Override collision with alien: bounce instead of remove
+  checkCollision(alien) {
+    // Standard AABB collision
+    if (
+      this.xPos < alien.xPos + alien.size &&
+      this.xPos + this.size > alien.xPos &&
+      this.yPos < alien.yPos + alien.size &&
+      this.yPos + this.size > alien.yPos
+    ) {
+      // Bounce: reflect direction (simple: reverse X and Y, or randomize)
+      // Here, reflect off the side it hit most
+      let centerX = this.xPos + this.size / 2;
+      let centerY = this.yPos + this.size / 2;
+      let alienCenterX = alien.xPos + alien.size / 2;
+      let alienCenterY = alien.yPos + alien.size / 2;
+      let dx = centerX - alienCenterX;
+      let dy = centerY - alienCenterY;
+      if (Math.abs(dx) > Math.abs(dy)) {
+        this.directionX *= -1; // Bounce horizontally
+      } else {
+        this.directionY *= -1; // Bounce vertically
+      }
+      this.bounces++;
+      return true; // Still counts as a hit
+    }
+    return false;
+  }
+
+  // Only remove if off screen or too many bounces
+  shouldRemove() {
+    return this.isOffScreen() || this.bounces > this.maxBounces;
+  }
+}
+
 //Title screen and initilizing aliens
 function setup() {
   createCanvas(1100, 600);
@@ -453,16 +520,19 @@ function spawnPickup(x, y) {
   // 25% chance to spawn a pickup
   if (random() < 0.25) {
     let pickupType;
-
-    // If player already has a life pickup, don't spawn another one
     if (lifePickupHeld > 0) {
-      pickupType = random(["fire-up", "ice-up", "laz-up", "repair"]);
+      pickupType = random(["fire-up", "ice-up", "laz-up", "scrap", "repair"]);
     } else {
-      pickupType = random(["fire-up", "ice-up", "laz-up", "life", "repair"]);
+      pickupType = random([
+        "fire-up",
+        "ice-up",
+        "laz-up",
+        "scrap",
+        "life",
+        "repair",
+      ]);
     }
-
     let pickupImage;
-
     switch (pickupType) {
       case "fire-up":
         pickupImage = fireUpImage;
@@ -473,6 +543,9 @@ function spawnPickup(x, y) {
       case "laz-up":
         pickupImage = lazUpImage;
         break;
+      case "scrap":
+        pickupImage = scrapImage;
+        break;
       case "life":
         pickupImage = lifeImage;
         break;
@@ -480,7 +553,6 @@ function spawnPickup(x, y) {
         pickupImage = repairImage;
         break;
     }
-
     let pickup = new Pickup(x, y, pickupType, pickupImage);
     groupPickup.push(pickup);
   }
@@ -491,49 +563,58 @@ function applyPickupEffect(type) {
   if (isAngelMode && type !== "life" && type !== "repair") {
     return;
   }
-  // Only one powerup at a time (fire, ice, laser)
+  // Only one powerup at a time (fire, ice, laser, scrap)
   switch (type) {
     case "fire-up":
-      // Deactivate other modes
       isIceMode = false;
       iceModeStartTime = 0;
       isLaserMode = false;
       laserModeStartTime = 0;
-      // Change player ship to fire2 image and enable fire mode
+      isScrapMode = false;
+      scrapModeStartTime = 0;
       player.image = fire2Image;
       isFireMode = true;
       fireModeStartTime = millis();
       break;
     case "ice-up":
-      // Deactivate other modes
       isFireMode = false;
       fireModeStartTime = 0;
       isLaserMode = false;
       laserModeStartTime = 0;
-      // Change player ship to ice2 image and enable ice mode
+      isScrapMode = false;
+      scrapModeStartTime = 0;
       player.image = ice2Image;
       isIceMode = true;
       iceModeStartTime = millis();
       break;
     case "laz-up":
-      // Deactivate other modes
       isFireMode = false;
       fireModeStartTime = 0;
       isIceMode = false;
       iceModeStartTime = 0;
-      // Change player ship to player.png and enable laser mode
+      isScrapMode = false;
+      scrapModeStartTime = 0;
       player.image = playerImage;
       isLaserMode = true;
       laserModeStartTime = millis();
       break;
+    case "scrap":
+      isFireMode = false;
+      fireModeStartTime = 0;
+      isIceMode = false;
+      iceModeStartTime = 0;
+      isLaserMode = false;
+      laserModeStartTime = 0;
+      player.image = scrapShipImage;
+      isScrapMode = true;
+      scrapModeStartTime = millis();
+      break;
     case "life":
-      // Add life pickup to inventory (max 1)
       if (lifePickupHeld < 1) {
         lifePickupHeld = 1;
       }
       break;
     case "repair":
-      // Only give +1 life if less than 3 lives
       if (lives < 3) {
         lives++;
       }
@@ -542,8 +623,8 @@ function applyPickupEffect(type) {
 }
 
 function draw() {
+  background(0); // Always clear the screen first
   if (state == 0) {
-    background(0);
     fill(255, 255, 255);
     textAlign(CENTER);
     textSize(48);
@@ -622,9 +703,62 @@ function draw() {
   }
 
   if (state == 1) {
-    background(0);
-    fill(255, 255, 255);
+    // Start between-rounds timer if all aliens are gone and not already in timer
+    if (groupAlien.length === 0 && !isBetweenRounds) {
+      isBetweenRounds = true;
+      betweenRoundsStartTime = millis();
+      // Clear all bullets
+      groupBullet = [];
+      groupEnemyBullet = [];
+      groupIceBullet = [];
+    }
 
+    // Always allow player movement during gameplay
+    if (keyIsDown(65)) {
+      player.xPos -= 5;
+      if (player.xPos < 0) player.xPos = 0; // Left boundary
+    }
+    if (keyIsDown(68)) {
+      player.xPos += 5;
+      if (player.xPos > width - player.size) player.xPos = width - player.size; // Right boundary
+    }
+    if (keyIsDown(83)) {
+      player.yPos += 5;
+      if (player.yPos > height - player.size)
+        player.yPos = height - player.size; // Bottom boundary
+    }
+    if (keyIsDown(87)) {
+      player.yPos -= 5;
+      if (player.yPos < 0) player.yPos = 0; // Top boundary
+    }
+
+    // Handle between-rounds timer
+    if (isBetweenRounds) {
+      let currentTime = millis();
+      let remaining = Math.ceil(
+        (betweenRoundsDuration - (currentTime - betweenRoundsStartTime)) / 1000
+      );
+      fill(255, 255, 0);
+      textSize(48);
+      textAlign(CENTER);
+      text("Next Round in " + remaining, width / 2, height / 2);
+      textSize(16);
+      textAlign(LEFT);
+      if (currentTime - betweenRoundsStartTime >= betweenRoundsDuration) {
+        isBetweenRounds = false;
+        currentRound++;
+        spawnAliens();
+      }
+      if (player) {
+        player.updateRotation();
+        player.draw();
+      }
+      // Skip alien and bullet updates/draws
+      return;
+    }
+
+    // Only display these when not in between-rounds timer
+    fill(255, 255, 255);
     text("Lives: " + lives, 950, 20);
     text("Aliens: " + groupAlien.length, 20, 20);
     text("Round " + currentRound, width / 2 - 30, 20);
@@ -714,6 +848,24 @@ function draw() {
       }
     }
 
+    // Display scrap mode status
+    if (isScrapMode) {
+      let currentTime = millis();
+      if (currentTime - scrapModeStartTime >= scrapModeDuration) {
+        isScrapMode = false;
+        player.image = player1Image; // Reset to default ship
+        console.log("Scrap mode expired!");
+      } else {
+        let remainingTime = Math.ceil(
+          (scrapModeDuration - (currentTime - scrapModeStartTime)) / 1000
+        );
+        text("SCRAP MODE: " + remainingTime + "s", 950, 220);
+        fill(200, 200, 200);
+        text("Left click: saw blade bounce!", 950, 240);
+        fill(255, 255, 255);
+      }
+    }
+
     if (player) {
       player.updateRotation();
       player.draw();
@@ -787,42 +939,14 @@ function draw() {
       }
     }
 
-    if (groupAlien.length === 0) {
-      currentRound++;
-      spawnAliens();
-    }
-
-    if (keyIsDown(65)) {
-      player.xPos -= 5;
-      if (player.xPos < 0) player.xPos = 0; // Left boundary
-    }
-
-    if (keyIsDown(68)) {
-      player.xPos += 5;
-      if (player.xPos > width - player.size) player.xPos = width - player.size; // Right boundary
-    }
-
-    if (keyIsDown(83)) {
-      player.yPos += 5;
-      if (player.yPos > height - player.size)
-        player.yPos = height - player.size; // Bottom boundary
-    }
-
-    if (keyIsDown(87)) {
-      player.yPos -= 5;
-      if (player.yPos < 0) player.yPos = 0; // Top boundary
-    }
-
     // Handle player shooting
     if (mouseIsPressed && mouseButton === LEFT) {
       let currentTime = millis();
       if (currentTime - lastShotTime >= shootCooldown) {
-        // Calculate bullet spawn position at ship's nose
         let bulletSpawnX =
           player.xPos + player.size / 2 + 25 * cos(player.rotation);
         let bulletSpawnY =
           player.yPos + player.size / 2 + 25 * sin(player.rotation);
-
         if (isAngelMode) {
           // Fire 13 laz bullets evenly in 360 degrees
           let numBullets = 13;
@@ -837,6 +961,14 @@ function draw() {
             );
             groupBullet.push(angelBullet);
           }
+        } else if (isScrapMode) {
+          let sawBullet = new SawBladeBullet(
+            bulletSpawnX,
+            bulletSpawnY,
+            player.rotation,
+            sawBladeImage
+          );
+          groupBullet.push(sawBullet);
         } else if (isLaserMode) {
           // Center bullet
           let baseAngle = player.rotation;
@@ -894,20 +1026,37 @@ function draw() {
       for (let j = groupAlien.length - 1; j >= 0; j--) {
         if (!groupAlien[j]) continue;
 
-        if (groupBullet[i] && groupBullet[i].checkCollision(groupAlien[j])) {
+        if (
+          groupBullet[i] instanceof SawBladeBullet &&
+          groupBullet[i].checkCollision(groupAlien[j])
+        ) {
           // Spawn pickup at enemy location before removing it
           spawnPickup(groupAlien[j].xPos, groupAlien[j].yPos);
-
+          // Remove the alien only (not the saw blade)
+          groupAlien.splice(j, 1);
+          score += 100;
+          // Saw blade bounces, do not remove
+        } else if (
+          !(groupBullet[i] instanceof SawBladeBullet) &&
+          groupBullet[i] &&
+          groupBullet[i].checkCollision(groupAlien[j])
+        ) {
+          // Spawn pickup at enemy location before removing it
+          spawnPickup(groupAlien[j].xPos, groupAlien[j].yPos);
           // Remove both the bullet and the alien
           groupBullet.splice(i, 1);
           groupAlien.splice(j, 1);
-          score += 100; // Add points for hitting an alien
-          break; // Exit the alien loop since this bullet is now gone
+          score += 100;
+          break;
         }
       }
 
-      // Remove bullets that are off screen
-      if (groupBullet[i] && groupBullet[i].isOffScreen()) {
+      // Remove bullets that are off screen or (for saws) too many bounces
+      if (
+        groupBullet[i] &&
+        groupBullet[i].shouldRemove &&
+        groupBullet[i].shouldRemove()
+      ) {
         groupBullet.splice(i, 1);
       }
     }
@@ -1032,7 +1181,6 @@ function draw() {
 
   //stae 3 = game over screen
   if (state == 3) {
-    background(0);
     fill(255, 255, 255);
     textSize(32);
     textAlign(CENTER);
@@ -1072,8 +1220,12 @@ function draw() {
         50
       );
 
-      // Check collision with player
-      if (player && groupEnemyBullet[i].checkCollision(player)) {
+      // Check collision with player (ignore SawBladeBullet)
+      if (
+        player &&
+        !(groupEnemyBullet[i] instanceof SawBladeBullet) &&
+        groupEnemyBullet[i].checkCollision(player)
+      ) {
         lives--;
         groupEnemyBullet.splice(i, 1);
         console.log("Player hit! Lives remaining:", lives);
@@ -1102,6 +1254,8 @@ function draw() {
             laserModeStartTime = 0;
             isAngelMode = false;
             angelModeStartTime = 0;
+            isScrapMode = false;
+            scrapModeStartTime = 0;
             state = 3; // Game over
           }
         }
@@ -1251,6 +1405,9 @@ function resetGame() {
   // Reset angel mode
   isAngelMode = false;
   angelModeStartTime = 0;
+  // Reset scrap mode
+  isScrapMode = false;
+  scrapModeStartTime = 0;
 }
 
 function mousePressed() {
