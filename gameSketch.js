@@ -44,7 +44,16 @@ let angelImage,
   player1Image,
   repairImage,
   lifeImage,
-  iceExploImage;
+  iceExploImage,
+  lazUpImage,
+  lazBulletImage;
+
+let isLaserMode = false; // Track if player is in laser mode
+let laserModeStartTime = 0; // Track when laser mode started
+let laserModeDuration = 30000; // 30 seconds in milliseconds
+let isAngelMode = false; // Track if player is in angel mode
+let angelModeStartTime = 0;
+let angelModeDuration = 10000; // 10 seconds in milliseconds
 
 function preload() {
   playerImage = loadImage("images/player/player.png");
@@ -61,6 +70,8 @@ function preload() {
   lifeImage = loadImage("images/pick-ups/life (1).png");
   flameImage = loadImage("images/bullets/flame (1).png");
   iceExploImage = loadImage("images/bullets/ice-explo (1).png");
+  lazUpImage = loadImage("images/pick-ups/laz-up (1).png");
+  lazBulletImage = loadImage("images/bullets/laz (1).png");
 }
 // blueprints for character alien and bullet
 class Bullet {
@@ -84,8 +95,19 @@ class Bullet {
   draw() {
     push();
     translate(this.xPos + this.size / 2, this.yPos + this.size / 2);
-    rotate(atan2(this.directionY, this.directionX) + PI / 2); // Match ship's rotation
-    image(this.image, -this.size / 2, -this.size / 2, this.size, this.size);
+    rotate(atan2(this.directionY, this.directionX) + PI / 2);
+    // Shift lazBulletImage 40px to the left for better alignment
+    if (this.image === lazBulletImage || this.image === bulletImage) {
+      image(
+        this.image,
+        -this.size / 2 - 30,
+        -this.size / 2,
+        this.size,
+        this.size
+      );
+    } else {
+      image(this.image, -this.size / 2, -this.size / 2, this.size, this.size);
+    }
     pop();
   }
 
@@ -364,13 +386,9 @@ class Pickup {
 
 //Title screen and initilizing aliens
 function setup() {
-  createCanvas(1000, 640);
-
-  background(0);
-
-  player = new Player(250, 400, playerImage);
-
-  spawnAliens(); // Move alien spawning to a separate function
+  createCanvas(1100, 600);
+  player = new Player(250, 400, player1Image); // Use player1 (1).png as default
+  spawnAliens();
 
   // Pre-render flame cones for better performance (only if images are loaded)
   if (flameImage && flameImage.width) {
@@ -438,9 +456,9 @@ function spawnPickup(x, y) {
 
     // If player already has a life pickup, don't spawn another one
     if (lifePickupHeld > 0) {
-      pickupType = random(["fire-up", "ice-up", "repair"]);
+      pickupType = random(["fire-up", "ice-up", "laz-up", "repair"]);
     } else {
-      pickupType = random(["fire-up", "ice-up", "life", "repair"]);
+      pickupType = random(["fire-up", "ice-up", "laz-up", "life", "repair"]);
     }
 
     let pickupImage;
@@ -451,6 +469,9 @@ function spawnPickup(x, y) {
         break;
       case "ice-up":
         pickupImage = iceUpImage;
+        break;
+      case "laz-up":
+        pickupImage = lazUpImage;
         break;
       case "life":
         pickupImage = lifeImage;
@@ -466,18 +487,44 @@ function spawnPickup(x, y) {
 }
 
 function applyPickupEffect(type) {
+  // If angel mode is active, ignore all pickups except life and repair
+  if (isAngelMode && type !== "life" && type !== "repair") {
+    return;
+  }
+  // Only one powerup at a time (fire, ice, laser)
   switch (type) {
     case "fire-up":
+      // Deactivate other modes
+      isIceMode = false;
+      iceModeStartTime = 0;
+      isLaserMode = false;
+      laserModeStartTime = 0;
       // Change player ship to fire2 image and enable fire mode
       player.image = fire2Image;
       isFireMode = true;
       fireModeStartTime = millis();
       break;
     case "ice-up":
+      // Deactivate other modes
+      isFireMode = false;
+      fireModeStartTime = 0;
+      isLaserMode = false;
+      laserModeStartTime = 0;
       // Change player ship to ice2 image and enable ice mode
       player.image = ice2Image;
       isIceMode = true;
       iceModeStartTime = millis();
+      break;
+    case "laz-up":
+      // Deactivate other modes
+      isFireMode = false;
+      fireModeStartTime = 0;
+      isIceMode = false;
+      iceModeStartTime = 0;
+      // Change player ship to player.png and enable laser mode
+      player.image = playerImage;
+      isLaserMode = true;
+      laserModeStartTime = millis();
       break;
     case "life":
       // Add life pickup to inventory (max 1)
@@ -629,6 +676,44 @@ function draw() {
       }
     }
 
+    // Display laser mode status
+    if (isLaserMode) {
+      // Check if laser mode has expired
+      let currentTime = millis();
+      if (currentTime - laserModeStartTime >= laserModeDuration) {
+        isLaserMode = false;
+        player.image = player1Image; // Reset to default ship
+        console.log("Laser mode expired!");
+      } else {
+        // Calculate remaining time
+        let remainingTime = Math.ceil(
+          (laserModeDuration - (currentTime - laserModeStartTime)) / 1000
+        );
+        text("LASER MODE: " + remainingTime + "s", 950, 140);
+        fill(255, 0, 255);
+        text("Left click for laser bullets", 950, 160);
+        fill(255, 255, 255);
+      }
+    }
+
+    // Display angel mode status
+    if (isAngelMode) {
+      let currentTime = millis();
+      if (currentTime - angelModeStartTime >= angelModeDuration) {
+        isAngelMode = false;
+        player.image = player1Image; // Reset to default ship
+        console.log("Angel mode expired!");
+      } else {
+        let remainingTime = Math.ceil(
+          (angelModeDuration - (currentTime - angelModeStartTime)) / 1000
+        );
+        text("ANGEL MODE: " + remainingTime + "s", 950, 180);
+        fill(255, 255, 0);
+        text("Left click: 13-way laser spread!", 950, 200);
+        fill(255, 255, 255);
+      }
+    }
+
     if (player) {
       player.updateRotation();
       player.draw();
@@ -676,11 +761,26 @@ function draw() {
           if (lifePickupHeld > 0) {
             lives = 3; // Restore to full health
             lifePickupHeld = 0; // Use the life pickup
+            // Activate angel mode
+            isAngelMode = true;
+            angelModeStartTime = millis();
+            player.image = angelImage;
+            // Prevent immediate game over by skipping the rest of this block
+            continue;
           } else {
             // Clear all bullets when game ends
             groupBullet = [];
             groupEnemyBullet = [];
             groupIceBullet = [];
+            // End all powerup modes
+            isFireMode = false;
+            fireModeStartTime = 0;
+            isIceMode = false;
+            iceModeStartTime = 0;
+            isLaserMode = false;
+            laserModeStartTime = 0;
+            isAngelMode = false;
+            angelModeStartTime = 0;
             state = 3; // Game over
           }
         }
@@ -723,13 +823,59 @@ function draw() {
         let bulletSpawnY =
           player.yPos + player.size / 2 + 25 * sin(player.rotation);
 
-        bullet = new Bullet(
-          bulletSpawnX, // Use calculated spawn position
-          bulletSpawnY, // Use calculated spawn position
-          player.rotation, // Use player's rotation angle
-          bulletImage
-        );
-        groupBullet.push(bullet);
+        if (isAngelMode) {
+          // Fire 13 laz bullets evenly in 360 degrees
+          let numBullets = 13;
+          let baseAngle = player.rotation;
+          for (let i = 0; i < numBullets; i++) {
+            let angle = baseAngle + radians((360 / numBullets) * i);
+            let angelBullet = new Bullet(
+              bulletSpawnX,
+              bulletSpawnY,
+              angle,
+              lazBulletImage
+            );
+            groupBullet.push(angelBullet);
+          }
+        } else if (isLaserMode) {
+          // Center bullet
+          let baseAngle = player.rotation;
+          // Main laser
+          let mainBullet = new Bullet(
+            bulletSpawnX,
+            bulletSpawnY,
+            baseAngle,
+            lazBulletImage
+          );
+          groupBullet.push(mainBullet);
+          // Left laser (-30 degrees)
+          let leftAngle = baseAngle - radians(30);
+          let leftBullet = new Bullet(
+            bulletSpawnX,
+            bulletSpawnY,
+            leftAngle,
+            lazBulletImage
+          );
+          groupBullet.push(leftBullet);
+          // Right laser (+30 degrees)
+          let rightAngle = baseAngle + radians(30);
+          let rightBullet = new Bullet(
+            bulletSpawnX,
+            bulletSpawnY,
+            rightAngle,
+            lazBulletImage
+          );
+          groupBullet.push(rightBullet);
+        } else {
+          let bulletImg = bulletImage;
+          bullet = new Bullet(
+            bulletSpawnX, // Use calculated spawn position
+            bulletSpawnY, // Use calculated spawn position
+            player.rotation, // Use player's rotation angle
+            bulletImg
+          );
+          groupBullet.push(bullet);
+        }
         lastShotTime = currentTime;
       }
     }
@@ -936,11 +1082,26 @@ function draw() {
           if (lifePickupHeld > 0) {
             lives = 3; // Restore to full health
             lifePickupHeld = 0; // Use the life pickup
+            // Activate angel mode
+            isAngelMode = true;
+            angelModeStartTime = millis();
+            player.image = angelImage;
+            // Prevent immediate game over by skipping the rest of this block
+            continue;
           } else {
             // Clear all bullets when game ends
             groupBullet = [];
             groupEnemyBullet = [];
             groupIceBullet = [];
+            // End all powerup modes
+            isFireMode = false;
+            fireModeStartTime = 0;
+            isIceMode = false;
+            iceModeStartTime = 0;
+            isLaserMode = false;
+            laserModeStartTime = 0;
+            isAngelMode = false;
+            angelModeStartTime = 0;
             state = 3; // Game over
           }
         }
@@ -984,6 +1145,8 @@ function mouseClicked() {
     fireModeStartTime = 0; // Reset fire mode timer
     isIceMode = false; // Reset ice mode
     iceModeStartTime = 0; // Reset ice mode timer
+    isLaserMode = false; // Reset laser mode
+    laserModeStartTime = 0; // Reset laser mode timer
     groupEnemyBullet = []; // Clear enemy bullets
     groupPickup = []; // Clear pickups
     groupIceBullet = []; // Clear ice bullets
@@ -1009,6 +1172,8 @@ function mouseClicked() {
     fireModeStartTime = 0; // Reset fire mode timer
     isIceMode = false; // Reset ice mode
     iceModeStartTime = 0; // Reset ice mode timer
+    isLaserMode = false; // Reset laser mode
+    laserModeStartTime = 0; // Reset laser mode timer
     groupEnemyBullet = []; // Clear enemy bullets
     groupPickup = []; // Clear pickups
     groupIceBullet = []; // Clear ice bullets
@@ -1034,6 +1199,8 @@ function mouseClicked() {
     fireModeStartTime = 0; // Reset fire mode timer
     isIceMode = false; // Reset ice mode
     iceModeStartTime = 0; // Reset ice mode timer
+    isLaserMode = false; // Reset laser mode
+    laserModeStartTime = 0; // Reset laser mode timer
     groupEnemyBullet = []; // Clear enemy bullets
     groupPickup = []; // Clear pickups
     groupIceBullet = []; // Clear ice bullets
@@ -1050,7 +1217,7 @@ function resetGame() {
   // Clear all ice bullets
   groupIceBullet = [];
   // Reset player position and rotation
-  player = new Player(250, 400, playerImage);
+  player = new Player(250, 400, player1Image); // Use player1 (1).png as default
   // Clear all aliens
   groupAlien = [];
   // Clear all pickups
@@ -1077,6 +1244,13 @@ function resetGame() {
   state = 0;
   // Reset last shot time
   lastShotTime = 0;
+  // Reset laser mode
+  isLaserMode = false;
+  // Reset laser mode timer
+  laserModeStartTime = 0;
+  // Reset angel mode
+  isAngelMode = false;
+  angelModeStartTime = 0;
 }
 
 function mousePressed() {
