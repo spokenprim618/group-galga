@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Galaga Game Test</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        background: #333;
+        color: white;
+        font-family: Arial, sans-serif;
+      }
+      #debug {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 10px;
+        border-radius: 5px;
+      }
+      #gameCanvas {
+        border: 2px solid #666;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="debug">
+      <h3>Debug Info</h3>
+      <div id="debugInfo">Loading...</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.0.0/addons/p5.sound.min.js"></script>
+
+    <!-- Configuration -->
+    <script src="js/config.js"></script>
+
+    <!-- Classes -->
+    <script src="js/classes/Player.js"></script>
+    <script src="js/classes/Bullet.js"></script>
+    <script src="js/classes/Enemy.js"></script>
+    <script src="js/classes/Pickup.js"></script>
+
+    <!-- Managers -->
+    <script src="js/managers/GameState.js"></script>
+    <script src="js/managers/AssetManager.js"></script>
+    <script src="js/managers/GameManager.js"></script>
+
+    <!-- UI -->
+    <script src="js/ui/UI.js"></script>
+
+    <!-- Systems -->
+    <script src="js/systems/FlameSystem.js"></script>
+    <script src="js/systems/WeaponSystem.js"></script>
+
+    <!-- Main Game -->
+    <script src="js/main.js"></script>
+
+    <script>
+      // Debug function to update debug info
+      function updateDebugInfo() {
+        const debugDiv = document.getElementById("debugInfo");
+        if (typeof gameState !== "undefined") {
+          debugDiv.innerHTML = `
+              <p>State: ${gameState.state}</p>
+              <p>Lives: ${gameState.lives}</p>
+              <p>Score: ${gameState.score}</p>
+              <p>Round: ${gameState.currentRound}</p>
+              <p>Mouse: ${mouseX}, ${mouseY}</p>
+              <p>Assets loaded: ${
+                typeof assetManager !== "undefined" ? "Yes" : "No"
+              }</p>
+            `;
+        } else {
+          debugDiv.innerHTML = "<p>Game not initialized yet</p>";
+        }
+      }
+
+      // Update debug info every 100ms
+      setInterval(updateDebugInfo, 100);
+    </script>
+  </body>
+</html>

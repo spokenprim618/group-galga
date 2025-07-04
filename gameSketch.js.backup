@@ -1,0 +1,72 @@
+// This is a backup of the original gameSketch.js file
+// The game has been reorganized into modular files in the js/ directory
+// See README.md for the new structure
+
+// Original file contents preserved here for reference
+let state = 0;
+let lives = 3;
+let score = 0;
+let currentRound = 1; // Track current round
+let lifePickupHeld = 0; // Track if player has a life pickup (max 1)
+let isFiring = false; // Track if flame thrower is active
+let flameStartTime = 0; // Track when flame thrower started
+let flameDuration = 2000; // 2 seconds in milliseconds
+let currentFrame = 0; // Current frame index
+let frameRate = 8; // Frames per second for animation
+let lastFrameTime = 0; // Track when last frame was shown
+let frameCounter = 0; // For FPS throttling
+let flameConeGraphic; // Pre-rendered flame cone
+let flameConeFallbackGraphic; // Pre-rendered fallback cone
+let isFireMode = false; // Track if player is in fire mode
+let fireModeStartTime = 0; // Track when fire mode started
+let fireModeDuration = 30000; // 30 seconds in milliseconds
+let isIceMode = false; // Track if player is in ice mode
+let iceModeStartTime = 0; // Track when ice mode started
+let iceModeDuration = 30000; // 30 seconds in milliseconds
+let groupIceBullet = []; // Array for ice bullets
+//loading images
+let playerImage,
+  enemyImage,
+  temp,
+  player,
+  bullet,
+  bulletImage,
+  enemyBulletImage,
+  flameImage;
+let lastShotTime = 0; // Track when the last bullet was fired
+let shootCooldown = 400; // Cooldown in milliseconds (0.4 seconds)
+
+let groupAlien = [];
+let groupBullet = [];
+let groupEnemyBullet = []; // Array for enemy bullets
+let groupPickup = []; // Array for pickups
+
+let angelImage,
+  fireUpImage,
+  fire2Image,
+  iceUpImage,
+  ice2Image,
+  player1Image,
+  repairImage,
+  lifeImage,
+  iceExploImage,
+  lazUpImage,
+  lazBulletImage;
+
+let isLaserMode = false; // Track if player is in laser mode
+let laserModeStartTime = 0; // Track when laser mode started
+let laserModeDuration = 30000; // 30 seconds in milliseconds
+let isAngelMode = false; // Track if player is in angel mode
+let angelModeStartTime = 0;
+let angelModeDuration = 10000; // 10 seconds in milliseconds
+let isScrapMode = false;
+let scrapModeStartTime = 0;
+let scrapModeDuration = 30000; // 30 seconds in milliseconds
+let scrapImage, scrapShipImage, sawBladeImage;
+
+let isBetweenRounds = false;
+let betweenRoundsStartTime = 0;
+let betweenRoundsDuration = 3000; // 3 seconds in milliseconds
+
+// ... rest of original file content would be here
+// This is just a placeholder - the full original content is preserved in the original gameSketch.js file 
