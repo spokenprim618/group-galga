@@ -67,12 +67,12 @@ const IMAGE_PATHS = {
 
   ENEMY: "images/enemies/enemy.png",
 
-  BULLET: "images/bullets/bullet.png",
-  ENEMY_BULLET: "images/bullets/en-bullet.png",
-  FLAME: "images/bullets/flame (1).png",
-  ICE_EXPLO: "images/bullets/ice-explo (1).png",
-  LAZ_BULLET: "images/bullets/laz (1).png",
-  SAW_BLADE: "images/bullets/saw-blade.png",
+  BULLET: "images/bullets/player-bullets/bullet.png",
+  ENEMY_BULLET: "images/bullets/enemy-bullets/en-bullet.png",
+  FLAME: "images/bullets/player-bullets/flame (1).png",
+  ICE_EXPLO: "images/bullets/player-bullets/ice-explo (1).png",
+  LAZ_BULLET: "images/bullets/player-bullets/laz (1).png",
+  SAW_BLADE: "images/bullets/player-bullets/saw-blade.png",
 
   FIRE_UP: "images/pick-ups/fire-up (1).png",
   ICE_UP: "images/pick-ups/ice-up (1).png",
