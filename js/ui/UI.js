@@ -151,15 +151,21 @@ class UI {
 
   static drawGameUI() {
     fill(255, 255, 255);
-    text("Lives: " + gameState.lives, 950, 20);
+    text("Health: " + gameState.health, 950, 20);
     text("Aliens: " + gameManager.groupAlien.length, 20, 20);
     text("Round " + gameState.currentRound, width / 2 - 30, 20);
     text("Score: " + gameState.score, 20, 40);
 
+    // Display shields in top right
+    text("Shields: " + gameState.shields, 950, 40);
+    if (gameState.shields > 0) {
+      image(assetManager.getImage("shield"), 850, 30, 30, 30);
+    }
+
     // Display life pickup if held
     if (gameState.lifePickupHeld > 0) {
-      text("Life Pickup: " + gameState.lifePickupHeld, 950, 40);
-      image(assetManager.getImage("life"), 850, 30, 30, 30);
+      text("Life Pickup: " + gameState.lifePickupHeld, 950, 60);
+      image(assetManager.getImage("life"), 850, 50, 30, 30);
     }
 
     this.drawPowerupStatus();
@@ -198,7 +204,7 @@ class UI {
       if (remainingTime > 0) {
         text("LASER MODE: " + remainingTime + "s", 950, yOffset);
         fill(255, 0, 255);
-        text("Left click for laser bullets", 950, yOffset + 20);
+        text("Triple laser fire", 950, yOffset + 20);
         fill(255, 255, 255);
       }
       yOffset += 40;
@@ -210,7 +216,7 @@ class UI {
       if (remainingTime > 0) {
         text("ANGEL MODE: " + remainingTime + "s", 950, yOffset);
         fill(255, 255, 0);
-        text("Left click: 13-way laser spread!", 950, yOffset + 20);
+        text("360° bullet spray", 950, yOffset + 20);
         fill(255, 255, 255);
       }
       yOffset += 40;
@@ -221,10 +227,23 @@ class UI {
       let remainingTime = gameState.getPowerupRemainingTime("scrap");
       if (remainingTime > 0) {
         text("SCRAP MODE: " + remainingTime + "s", 950, yOffset);
-        fill(200, 200, 200);
-        text("Left click: saw blade bounce!", 950, yOffset + 20);
+        fill(150, 150, 150);
+        text("Bouncing saw blades", 950, yOffset + 20);
         fill(255, 255, 255);
       }
+      yOffset += 40;
+    }
+
+    // Display speed mode status
+    if (gameState.isSpeedMode) {
+      let remainingTime = gameState.getPowerupRemainingTime("speed");
+      if (remainingTime > 0) {
+        text("SPEED MODE: " + remainingTime + "s", 950, yOffset);
+        fill(0, 255, 0);
+        text("15% speed boost", 950, yOffset + 20);
+        fill(255, 255, 255);
+      }
+      yOffset += 40;
     }
   }
 

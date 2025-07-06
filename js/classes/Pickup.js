@@ -31,10 +31,27 @@ class Pickup {
   }
 
   static getPickupTypes() {
-    return ["fire-up", "ice-up", "laz-up", "scrap", "life", "repair"];
+    return [
+      "fire-up",
+      "ice-up",
+      "laz-up",
+      "scrap",
+      "life",
+      "repair",
+      "shield",
+      "speed",
+    ];
   }
 
   static getPickupTypesWithoutLife() {
-    return ["fire-up", "ice-up", "laz-up", "scrap", "repair"];
+    return [
+      "fire-up",
+      "ice-up",
+      "laz-up",
+      "scrap",
+      "repair",
+      "shield",
+      "speed",
+    ];
   }
 }

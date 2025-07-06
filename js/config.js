@@ -9,6 +9,7 @@ const GAME_CONFIG = {
   PLAYER_START_Y: 400,
   PLAYER_SIZE: 50,
   PLAYER_SPEED: 5,
+  PLAYER_SPEED_BOOST: 1.15, // 15% speed increase
 
   // Bullet settings
   BULLET_SPEED: 5,
@@ -19,6 +20,19 @@ const GAME_CONFIG = {
   ENEMY_SIZE: 50,
   ENEMY_SPEED: 2,
   ENEMY_SHOOT_CHANCE: 0.02, // 2% per frame
+
+  // Ice enemy settings
+  ICE_DRONE_SHOOT_CHANCE: 0.02, // Same as regular enemy
+  ICE_SLOWER_SHOOT_CHANCE: 0.01, // Slower shooting (1% per frame)
+  ICE_SPEED_SHOOT_CHANCE: 0.02, // Same as regular enemy
+  ICE_BEAM_DAMAGE: 5, // Ice beam does 5 damage
+  ICE_BEAM_RANGE: 350, // Range for beam activation (increased by 150)
+  ICE_BEAM_LENGTH: 300, // Length of the beam
+  ICE_BEAM_WIDTH: 20, // Width of the beam
+  ICE_BULLET_DAMAGE: 20, // Ice bullets do 20 damage
+  ICE_WAVE_DAMAGE: 20, // Ice wave does 20 damage
+  ICE_WAVE_SPEED: 1.5, // Slower than regular bullets
+  ICE_BULLET_SPEED: 2, // Same as regular enemy bullets
 
   // Pickup settings
   PICKUP_SIZE: 40,
@@ -31,6 +45,7 @@ const GAME_CONFIG = {
   LASER_MODE_DURATION: 30000, // 30 seconds
   ANGEL_MODE_DURATION: 10000, // 10 seconds
   SCRAP_MODE_DURATION: 30000, // 30 seconds
+  SPEED_MODE_DURATION: 20000, // 20 seconds
 
   // Flame thrower settings
   FLAME_DURATION: 2000, // 2 seconds
@@ -65,10 +80,17 @@ const IMAGE_PATHS = {
   ICE2: "images/player/ice2 (1).png",
   SCRAP_SHIP: "images/player/scrap-ship.png",
 
-  ENEMY: "images/enemies/enemy.png",
+  ENEMY: "images/enemies/n-enemy.png",
+  ICE_DRONE: "images/enemies/ice/ice1-drone.png",
+  ICE_SLOWER: "images/enemies/ice/ice2-slower.png",
+  ICE_SPEED: "images/enemies/ice/ice3-speed.png",
+  ICE_BEAM: "images/enemies/ice/ice5-beam.png", // Enemy image
 
   BULLET: "images/bullets/player-bullets/bullet.png",
   ENEMY_BULLET: "images/bullets/enemy-bullets/en-bullet.png",
+  ICE_BULLET: "images/bullets/enemy-bullets/ice/ice-bullet.png",
+  ICE_WAVE: "images/bullets/enemy-bullets/ice/ice-wave (1).png",
+  ICE_BEAM_BULLET: "images/bullets/enemy-bullets/ice/ice-beam.png",
   FLAME: "images/bullets/player-bullets/flame (1).png",
   ICE_EXPLO: "images/bullets/player-bullets/ice-explo (1).png",
   LAZ_BULLET: "images/bullets/player-bullets/laz (1).png",
@@ -80,4 +102,6 @@ const IMAGE_PATHS = {
   SCRAP: "images/pick-ups/scrap.png",
   LIFE: "images/pick-ups/life (1).png",
   REPAIR: "images/pick-ups/repair (1).png",
+  SHIELD: "images/pick-ups/shield.png",
+  SPEED: "images/pick-ups/speed.png",
 };

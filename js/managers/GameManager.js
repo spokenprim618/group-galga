@@ -9,12 +9,62 @@ class GameManager {
   }
 
   spawnAliens() {
-    this.groupAlien = []; // Clear existing aliens
-    for (let i = 0; i < 5; i++) {
-      // Random x position between 0 and width-50 (accounting for enemy size)
-      let randomX = random(0, width - GAME_CONFIG.ENEMY_SIZE);
-      let alien = new Alien(randomX, 20, assetManager.getImage("enemy"));
-      this.groupAlien.push(alien);
+    // Clear existing aliens
+    this.groupAlien = [];
+
+    // Determine enemy types based on current round
+    let enemyTypes = this.getEnemyTypesForRound();
+
+    // Spawn enemies based on round (reduced for testing)
+    let numEnemies = 3; // Fixed number for testing instead of scaling
+    for (let i = 0; i < numEnemies; i++) {
+      let x = random(50, width - 100);
+      let y = random(50, 200);
+
+      // Randomly select enemy type from available types
+      let enemyType = random(enemyTypes);
+      let enemy;
+
+      switch (enemyType) {
+        case "iceDrone":
+          enemy = new IceDrone(x, y);
+          break;
+        case "iceSlower":
+          enemy = new IceSlower(x, y);
+          break;
+        case "iceSpeed":
+          enemy = new IceSpeed(x, y);
+          break;
+        case "iceBeam":
+          enemy = new IceBeamEnemy(x, y);
+          break;
+        default:
+          enemy = new Alien(x, y, assetManager.getImage("enemy"));
+          break;
+      }
+
+      this.groupAlien.push(enemy);
+    }
+  }
+
+  getEnemyTypesForRound() {
+    let round = gameState.currentRound;
+
+    if (round >= 15 && round < 20) {
+      // Waves 15-19: Only ice drones
+      return ["iceDrone"];
+    } else if (round >= 20 && round < 25) {
+      // Waves 20-24: Ice slower and ice speed
+      return ["iceSlower", "iceSpeed"];
+    } else if (round >= 25 && round < 30) {
+      // Waves 25-29: Ice beam enemies
+      return ["iceBeam"];
+    } else if (round >= 30) {
+      // Wave 30+: All ice types including beam
+      return ["iceDrone", "iceSlower", "iceSpeed", "iceBeam"];
+    } else {
+      // Waves 1-14: Regular enemies
+      return ["regular"];
     }
   }
 
@@ -48,6 +98,10 @@ class GameManager {
         return assetManager.getImage("life");
       case "repair":
         return assetManager.getImage("repair");
+      case "shield":
+        return assetManager.getImage("shield");
+      case "speed":
+        return assetManager.getImage("speed");
       default:
         return assetManager.getImage("repair");
     }
@@ -73,29 +127,70 @@ class GameManager {
   }
 
   updateAliens() {
-    for (let i = 0; i < this.groupAlien.length; i++) {
-      if (!this.groupAlien[i]) continue;
-
-      this.groupAlien[i].move();
-      this.groupAlien[i].draw();
-
-      // Random shooting for each alien
-      if (this.groupAlien[i].shouldShoot() && this.player) {
-        let alienCenter = this.groupAlien[i].getCenter();
-        let enemyBullet = new EnemyBullet(
-          alienCenter.x,
-          alienCenter.y + this.groupAlien[i].size,
-          this.player.xPos + this.player.size / 2,
-          this.player.yPos + this.player.size / 2,
-          assetManager.getImage("enemyBullet")
-        );
-        this.groupEnemyBullet.push(enemyBullet);
+    for (let i = this.groupAlien.length - 1; i >= 0; i--) {
+      if (!this.groupAlien[i]) {
+        this.groupAlien.splice(i, 1);
+        continue;
       }
 
-      if (this.groupAlien[i].isOffScreen()) {
-        this.groupAlien[i].yPos = 0;
-        gameState.lives -= 1;
-        this.checkGameOver();
+      try {
+        // Use update method for ice beam enemies, move for others
+        if (this.groupAlien[i].type === "iceBeam") {
+          this.groupAlien[i].update();
+        } else {
+          this.groupAlien[i].move();
+        }
+        this.groupAlien[i].draw();
+
+        // Handle enemy shooting (ice beam enemies don't shoot bullets)
+        if (
+          this.groupAlien[i].shouldShoot() &&
+          this.player &&
+          this.groupAlien[i].type !== "iceBeam"
+        ) {
+          let bullet;
+
+          // Create appropriate bullet based on enemy type
+          if (
+            this.groupAlien[i].type === "iceDrone" ||
+            this.groupAlien[i].type === "iceSpeed" ||
+            this.groupAlien[i].type === "iceSlower"
+          ) {
+            // Ice enemies create their own bullets
+            bullet = this.groupAlien[i].createBullet();
+          } else {
+            // Regular enemies create standard enemy bullets
+            let center = this.groupAlien[i].getCenter();
+            bullet = new EnemyBullet(
+              center.x,
+              center.y,
+              this.player.xPos + this.player.size / 2,
+              this.player.yPos + this.player.size / 2,
+              assetManager.getImage("enemyBullet")
+            );
+          }
+
+          this.groupEnemyBullet.push(bullet);
+        }
+
+        if (this.groupAlien[i].isOffScreen()) {
+          this.groupAlien[i].yPos = 0;
+          // Use shield first if available, otherwise take health damage
+          if (gameState.shields > 0) {
+            gameState.shields--; // Remove one shield
+            console.log(
+              "Shield absorbed alien escape penalty! Shields remaining:",
+              gameState.shields
+            );
+          } else {
+            gameState.health -= 10; // Deal 10 damage if no shields
+            console.log("Alien escaped! Health remaining:", gameState.health);
+          }
+          this.checkGameOver();
+        }
+      } catch (error) {
+        console.log("Error updating alien:", error);
+        this.groupAlien.splice(i, 1);
       }
     }
   }
@@ -113,6 +208,9 @@ class GameManager {
       // Check for collisions with aliens
       for (let j = this.groupAlien.length - 1; j >= 0; j--) {
         if (!this.groupAlien[j]) continue;
+
+        // Skip ice beam enemies - they can't be killed by bullets
+        if (this.groupAlien[j].type === "iceBeam") continue;
 
         if (
           this.groupBullet[i] instanceof SawBladeBullet &&
@@ -182,13 +280,7 @@ class GameManager {
 
       try {
         this.groupEnemyBullet[i].move();
-        image(
-          this.groupEnemyBullet[i].image,
-          this.groupEnemyBullet[i].xPos,
-          this.groupEnemyBullet[i].yPos,
-          50,
-          50
-        );
+        this.groupEnemyBullet[i].draw();
 
         // Check collision with player (ignore SawBladeBullet)
         if (
@@ -196,7 +288,26 @@ class GameManager {
           !(this.groupEnemyBullet[i] instanceof SawBladeBullet) &&
           this.groupEnemyBullet[i].checkCollision(this.player)
         ) {
-          gameState.lives--;
+          // Determine damage based on bullet type
+          let damage = 10; // Default damage for regular enemy bullets
+
+          if (this.groupEnemyBullet[i] instanceof EnemyIceBullet) {
+            damage = GAME_CONFIG.ICE_BULLET_DAMAGE; // 20 damage for ice bullets
+          } else if (this.groupEnemyBullet[i] instanceof IceWaveBullet) {
+            damage = GAME_CONFIG.ICE_WAVE_DAMAGE; // 20 damage for ice wave
+          }
+
+          // Use shield first if available, otherwise take health damage
+          if (gameState.shields > 0) {
+            gameState.shields--; // Remove one shield
+            console.log(
+              "Shield absorbed damage! Shields remaining:",
+              gameState.shields
+            );
+          } else {
+            gameState.health -= damage; // Deal damage based on bullet type
+            console.log("Player hit! Health remaining:", gameState.health);
+          }
           this.groupEnemyBullet.splice(i, 1);
           this.checkGameOver();
           continue;
@@ -232,6 +343,9 @@ class GameManager {
       if (this.groupIceBullet[i].hasExploded) {
         for (let j = this.groupAlien.length - 1; j >= 0; j--) {
           if (!this.groupAlien[j]) continue;
+
+          // Skip ice beam enemies - they can't be killed by explosions
+          if (this.groupAlien[j].type === "iceBeam") continue;
 
           if (
             this.groupIceBullet[i].checkExplosionCollision(this.groupAlien[j])
@@ -274,11 +388,11 @@ class GameManager {
   }
 
   checkGameOver() {
-    if (gameState.lives <= 0) {
+    if (gameState.health <= 0) {
       // Check if player has a life pickup to auto-restore
       if (gameState.lifePickupHeld > 0) {
         gameState.activateAngelMode();
-        this.player.image = assetManager.getImage("angel");
+        this.updatePlayerImage(); // Properly update player image
         // Prevent immediate game over by skipping the rest of this block
         return;
       } else {

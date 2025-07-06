@@ -151,6 +151,110 @@ class IceBullet {
   }
 }
 
+class EnemyIceBullet {
+  constructor(x, y, targetX, targetY, image) {
+    this.xPos = x;
+    this.yPos = y;
+    this.image = image;
+    this.speed = GAME_CONFIG.ICE_BULLET_SPEED;
+    this.size = GAME_CONFIG.BULLET_SIZE;
+    this.damage = GAME_CONFIG.ICE_BULLET_DAMAGE;
+
+    // Calculate direction to player
+    let dx = targetX - x;
+    let dy = targetY - y;
+    let distance = Math.sqrt(dx * dx + dy * dy);
+    // Prevent division by zero
+    if (distance === 0) {
+      this.directionX = 0;
+      this.directionY = 1;
+    } else {
+      this.directionX = dx / distance;
+      this.directionY = dy / distance;
+    }
+  }
+
+  move() {
+    this.xPos += this.directionX * this.speed;
+    this.yPos += this.directionY * this.speed;
+  }
+
+  draw() {
+    image(this.image, this.xPos, this.yPos, this.size, this.size);
+  }
+
+  isOffScreen() {
+    return (
+      this.xPos < -50 ||
+      this.xPos > width + 50 ||
+      this.yPos < -50 ||
+      this.yPos > height + 50
+    );
+  }
+
+  checkCollision(player) {
+    if (!player) return false;
+    return (
+      this.xPos < player.xPos + player.size &&
+      this.xPos + this.size > player.xPos &&
+      this.yPos < player.yPos + player.size &&
+      this.yPos + this.size > player.yPos
+    );
+  }
+}
+
+class IceWaveBullet {
+  constructor(x, y, targetX, targetY, image) {
+    this.xPos = x;
+    this.yPos = y;
+    this.image = image;
+    this.speed = GAME_CONFIG.ICE_WAVE_SPEED;
+    this.size = GAME_CONFIG.BULLET_SIZE;
+    this.damage = GAME_CONFIG.ICE_WAVE_DAMAGE;
+
+    // Calculate direction to player
+    let dx = targetX - x;
+    let dy = targetY - y;
+    let distance = Math.sqrt(dx * dx + dy * dy);
+    // Prevent division by zero
+    if (distance === 0) {
+      this.directionX = 0;
+      this.directionY = 1;
+    } else {
+      this.directionX = dx / distance;
+      this.directionY = dy / distance;
+    }
+  }
+
+  move() {
+    this.xPos += this.directionX * this.speed;
+    this.yPos += this.directionY * this.speed;
+  }
+
+  draw() {
+    image(this.image, this.xPos, this.yPos, this.size, this.size);
+  }
+
+  isOffScreen() {
+    return (
+      this.xPos < -50 ||
+      this.xPos > width + 50 ||
+      this.yPos < -50 ||
+      this.yPos > height + 50
+    );
+  }
+
+  checkCollision(player) {
+    if (!player) return false;
+    return (
+      this.xPos < player.xPos + player.size &&
+      this.xPos + this.size > player.xPos &&
+      this.yPos < player.yPos + player.size &&
+      this.yPos + this.size > player.yPos
+    );
+  }
+}
+
 class EnemyBullet {
   constructor(x, y, targetX, targetY, image) {
     this.xPos = x;
@@ -176,6 +280,10 @@ class EnemyBullet {
   move() {
     this.xPos += this.directionX * this.speed;
     this.yPos += this.directionY * this.speed;
+  }
+
+  draw() {
+    image(this.image, this.xPos, this.yPos, this.size, this.size);
   }
 
   isOffScreen() {

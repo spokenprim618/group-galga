@@ -31,21 +31,27 @@ class Player {
   }
 
   move(direction) {
+    // Calculate current speed based on speed mode
+    let currentSpeed = GAME_CONFIG.PLAYER_SPEED;
+    if (gameState && gameState.isSpeedMode) {
+      currentSpeed = GAME_CONFIG.PLAYER_SPEED * GAME_CONFIG.PLAYER_SPEED_BOOST;
+    }
+
     switch (direction) {
       case "left":
-        this.xPos -= GAME_CONFIG.PLAYER_SPEED;
+        this.xPos -= currentSpeed;
         if (this.xPos < 0) this.xPos = 0;
         break;
       case "right":
-        this.xPos += GAME_CONFIG.PLAYER_SPEED;
+        this.xPos += currentSpeed;
         if (this.xPos > width - this.size) this.xPos = width - this.size;
         break;
       case "up":
-        this.yPos -= GAME_CONFIG.PLAYER_SPEED;
+        this.yPos -= currentSpeed;
         if (this.yPos < 0) this.yPos = 0;
         break;
       case "down":
-        this.yPos += GAME_CONFIG.PLAYER_SPEED;
+        this.yPos += currentSpeed;
         if (this.yPos > height - this.size) this.yPos = height - this.size;
         break;
     }
@@ -56,5 +62,12 @@ class Player {
       x: this.xPos + this.size / 2 + 25 * cos(this.rotation),
       y: this.yPos + this.size / 2 + 25 * sin(this.rotation),
     };
+  }
+
+  takeDamage(damage) {
+    // This method is called by enemies to damage the player
+    // The actual damage handling is done in GameManager
+    // This method exists for compatibility with enemy damage calls
+    console.log("Player taking damage:", damage);
   }
 }

@@ -11,8 +11,15 @@ class AssetManager {
       // Load all images
       this.images.player = loadImage(IMAGE_PATHS.PLAYER);
       this.images.enemy = loadImage(IMAGE_PATHS.ENEMY);
+      this.images.iceDrone = loadImage(IMAGE_PATHS.ICE_DRONE);
+      this.images.iceSlower = loadImage(IMAGE_PATHS.ICE_SLOWER);
+      this.images.iceSpeed = loadImage(IMAGE_PATHS.ICE_SPEED);
+      this.images.iceBeam = loadImage(IMAGE_PATHS.ICE_BEAM);
       this.images.bullet = loadImage(IMAGE_PATHS.BULLET);
       this.images.enemyBullet = loadImage(IMAGE_PATHS.ENEMY_BULLET);
+      this.images.iceBullet = loadImage(IMAGE_PATHS.ICE_BULLET);
+      this.images.iceWave = loadImage(IMAGE_PATHS.ICE_WAVE);
+      this.images.iceBeamBullet = loadImage(IMAGE_PATHS.ICE_BEAM_BULLET);
       this.images.angel = loadImage(IMAGE_PATHS.ANGEL);
       this.images.fireUp = loadImage(IMAGE_PATHS.FIRE_UP);
       this.images.fire2 = loadImage(IMAGE_PATHS.FIRE2);
@@ -28,6 +35,8 @@ class AssetManager {
       this.images.scrap = loadImage(IMAGE_PATHS.SCRAP);
       this.images.scrapShip = loadImage(IMAGE_PATHS.SCRAP_SHIP);
       this.images.sawBlade = loadImage(IMAGE_PATHS.SAW_BLADE);
+      this.images.shield = loadImage(IMAGE_PATHS.SHIELD);
+      this.images.speed = loadImage(IMAGE_PATHS.SPEED);
       console.log("All images loaded successfully");
     } catch (error) {
       console.error("Error loading images:", error);

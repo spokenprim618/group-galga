@@ -1,7 +1,8 @@
 class GameState {
   constructor() {
     this.state = GAME_CONFIG.STATES.TITLE;
-    this.lives = 3;
+    this.health = 100;
+    this.shields = 0;
     this.score = 0;
     this.currentRound = 1;
     this.lifePickupHeld = 0;
@@ -17,6 +18,8 @@ class GameState {
     this.angelModeStartTime = 0;
     this.isScrapMode = false;
     this.scrapModeStartTime = 0;
+    this.isSpeedMode = false;
+    this.speedModeStartTime = 0;
 
     // Flame thrower state
     this.isFiring = false;
@@ -36,7 +39,8 @@ class GameState {
 
   reset() {
     this.state = GAME_CONFIG.STATES.TITLE;
-    this.lives = 3;
+    this.health = 100;
+    this.shields = 0;
     this.score = 0;
     this.currentRound = 1;
     this.lifePickupHeld = 0;
@@ -52,6 +56,8 @@ class GameState {
     this.angelModeStartTime = 0;
     this.isScrapMode = false;
     this.scrapModeStartTime = 0;
+    this.isSpeedMode = false;
+    this.speedModeStartTime = 0;
 
     // Reset flame state
     this.isFiring = false;
@@ -70,7 +76,8 @@ class GameState {
   startGame() {
     this.state = GAME_CONFIG.STATES.PLAYING;
     // Don't call reset() here as it sets state back to TITLE
-    this.lives = 3;
+    this.health = 100;
+    this.shields = 0;
     this.score = 0;
     this.currentRound = 1;
     this.lifePickupHeld = 0;
@@ -86,6 +93,8 @@ class GameState {
     this.angelModeStartTime = 0;
     this.isScrapMode = false;
     this.scrapModeStartTime = 0;
+    this.isSpeedMode = false;
+    this.speedModeStartTime = 0;
 
     // Reset flame state
     this.isFiring = false;
@@ -133,14 +142,24 @@ class GameState {
         this.isScrapMode = true;
         this.scrapModeStartTime = millis();
         break;
+      case "speed":
+        this.deactivateAllPowerups();
+        this.isSpeedMode = true;
+        this.speedModeStartTime = millis();
+        break;
       case "life":
         if (this.lifePickupHeld < 1) {
           this.lifePickupHeld = 1;
         }
         break;
       case "repair":
-        if (this.lives < 3) {
-          this.lives++;
+        if (this.health < 100) {
+          this.health = Math.min(100, this.health + 30);
+        }
+        break;
+      case "shield":
+        if (this.shields < 3) {
+          this.shields++;
         }
         break;
     }
@@ -155,6 +174,8 @@ class GameState {
     this.laserModeStartTime = 0;
     this.isScrapMode = false;
     this.scrapModeStartTime = 0;
+    this.isSpeedMode = false;
+    this.speedModeStartTime = 0;
   }
 
   checkPowerupExpiration() {
@@ -204,6 +225,15 @@ class GameState {
       this.isScrapMode = false;
       this.scrapModeStartTime = 0;
     }
+
+    // Check speed mode expiration
+    if (
+      this.isSpeedMode &&
+      currentTime - this.speedModeStartTime >= GAME_CONFIG.SPEED_MODE_DURATION
+    ) {
+      this.isSpeedMode = false;
+      this.speedModeStartTime = 0;
+    }
   }
 
   getPowerupRemainingTime(powerupType) {
@@ -249,12 +279,22 @@ class GameState {
                 1000
             )
           : 0;
+      case "speed":
+        return this.isSpeedMode
+          ? Math.ceil(
+              (GAME_CONFIG.SPEED_MODE_DURATION -
+                (currentTime - this.speedModeStartTime)) /
+                1000
+            )
+          : 0;
       default:
         return 0;
     }
   }
 
   activateAngelMode() {
+    this.health = 100; // Restore to full health instead of lives
+    this.deactivateAllPowerups(); // Deactivate all other powerups
     this.isAngelMode = true;
     this.angelModeStartTime = millis();
     this.lifePickupHeld = 0; // Use the life pickup

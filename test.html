@@ -65,7 +65,8 @@
         if (typeof gameState !== "undefined") {
           debugDiv.innerHTML = `
               <p>State: ${gameState.state}</p>
-              <p>Lives: ${gameState.lives}</p>
+              <p>Health: ${gameState.health}</p>
+              <p>Shields: ${gameState.shields}</p>
               <p>Score: ${gameState.score}</p>
               <p>Round: ${gameState.currentRound}</p>
               <p>Mouse: ${mouseX}, ${mouseY}</p>
@@ -80,6 +81,31 @@
 
       // Update debug info every 100ms
       setInterval(updateDebugInfo, 100);
+
+      // Override the startGame function to start at wave 25
+      function startGame() {
+        console.log("Starting game at wave 25...");
+        gameState.startGame();
+        gameState.currentRound = 25; // Set to wave 25 for ice beam testing
+        gameManager.reset();
+        gameManager.spawnAliens();
+        console.log("Game started at wave 25. State:", gameState.state);
+
+        // Debug: Check beam image dimensions
+        setTimeout(() => {
+          let beamImage = assetManager.getImage("iceBeamBullet");
+          if (beamImage) {
+            console.log(
+              "Beam image dimensions:",
+              beamImage.width,
+              "x",
+              beamImage.height
+            );
+          } else {
+            console.log("Beam image not loaded");
+          }
+        }, 1000);
+      }
     </script>
   </body>
 </html>
