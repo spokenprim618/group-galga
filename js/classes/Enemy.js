@@ -178,9 +178,11 @@ class IceBeamEnemy extends Alien {
     // Activate beam if player is in range
     if (distance <= GAME_CONFIG.ICE_BEAM_RANGE) {
       this.beamActive = true;
-      // Calculate angle to player and rotate by 90 degrees positive
-      this.beamAngle =
-        atan2(playerCenter.y - center.y, playerCenter.x - center.x) + PI / 2; // Rotate 90 degrees clockwise
+      // Calculate angle to player
+      this.beamAngle = atan2(
+        playerCenter.y - center.y,
+        playerCenter.x - center.x
+      );
 
       // Check if beam hits player and apply damage
       if (this.isBeamHittingPlayer()) {
@@ -321,7 +323,7 @@ class IceBeamEnemy extends Alien {
         // Use the beam image
         push();
         translate(beamStartX, beamStartY);
-        rotate(this.beamAngle);
+        rotate(this.beamAngle + HALF_PI);
 
         // Draw the beam image stretched to the desired dimensions
         imageMode(CENTER);

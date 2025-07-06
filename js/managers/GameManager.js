@@ -209,9 +209,6 @@ class GameManager {
       for (let j = this.groupAlien.length - 1; j >= 0; j--) {
         if (!this.groupAlien[j]) continue;
 
-        // Skip ice beam enemies - they can't be killed by bullets
-        if (this.groupAlien[j].type === "iceBeam") continue;
-
         if (
           this.groupBullet[i] instanceof SawBladeBullet &&
           this.groupBullet[i].checkCollision(this.groupAlien[j])
@@ -343,9 +340,6 @@ class GameManager {
       if (this.groupIceBullet[i].hasExploded) {
         for (let j = this.groupAlien.length - 1; j >= 0; j--) {
           if (!this.groupAlien[j]) continue;
-
-          // Skip ice beam enemies - they can't be killed by explosions
-          if (this.groupAlien[j].type === "iceBeam") continue;
 
           if (
             this.groupIceBullet[i].checkExplosionCollision(this.groupAlien[j])
