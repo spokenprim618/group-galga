@@ -579,10 +579,12 @@ class ToxicGasBullet {
     this.hasExploded = false;
     this.explosionSize = GAME_CONFIG.TOXIC_GAS_EXPLOSION_SIZE;
     this.explosionStartTime = 0;
-    this.explosionDuration = GAME_CONFIG.TOXIC_GAS_EXPLOSION_DURATION;
-    this.damage = GAME_CONFIG.TOXIC_GAS_DAMAGE;
+    this.explosionDuration = 2000; // 2 seconds linger
+    this.damage = 10; // 10 damage per second
     this.creationTime = millis();
     this.lifeTime = 900; // ms before explosion
+    this.lastDamageTick = 0;
+    this.damageTickInterval = 100; // 1 damage every 100ms (10/sec)
 
     // Calculate direction to player
     let dx = targetX - x;
@@ -608,7 +610,7 @@ class ToxicGasBullet {
     if (!this.hasExploded) {
       image(this.canImage, this.xPos, this.yPos, this.size, this.size);
     } else {
-      // Draw explosion centered on the original bullet position
+      // Draw lingering gas cloud
       push();
       translate(this.xPos + this.size / 2, this.yPos + this.size / 2);
       image(
@@ -638,6 +640,7 @@ class ToxicGasBullet {
   explode() {
     this.hasExploded = true;
     this.explosionStartTime = millis();
+    this.lastDamageTick = millis();
   }
 
   shouldRemove() {
@@ -660,6 +663,32 @@ class ToxicGasBullet {
     let dy = playerCenterY - explosionCenterY;
     let distance = Math.sqrt(dx * dx + dy * dy);
     return distance < this.explosionSize / 2;
+  }
+
+  applyGasDamage(player) {
+    if (!this.hasExploded) return;
+    if (!this.checkExplosionCollision(player)) return;
+    let now = millis();
+    if (now - this.lastDamageTick >= this.damageTickInterval) {
+      // Deal 1 damage per tick (10/sec)
+      if (gameState.shields > 0) {
+        gameState.shields--;
+        console.log(
+          "Shield absorbed toxic gas damage! Shields remaining:",
+          gameState.shields
+        );
+      } else {
+        gameState.health -= 1;
+        console.log(
+          "Player hit by toxic gas! Health remaining:",
+          gameState.health
+        );
+      }
+      this.lastDamageTick = now;
+      if (gameState.health <= 0) {
+        gameManager.checkGameOver();
+      }
+    }
   }
 }
 

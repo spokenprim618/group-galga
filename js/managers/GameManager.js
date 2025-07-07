@@ -483,6 +483,11 @@ class GameManager {
         this.groupEnemyBullet[i].move();
         this.groupEnemyBullet[i].draw();
 
+        // Apply toxic gas lingering damage
+        if (this.groupEnemyBullet[i] instanceof ToxicGasBullet && this.player) {
+          this.groupEnemyBullet[i].applyGasDamage(this.player);
+        }
+
         // Check collision with player (ignore SawBladeBullet)
         if (
           this.player &&
