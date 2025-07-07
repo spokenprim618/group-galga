@@ -104,7 +104,7 @@ const GAME_CONFIG = {
   DARK_BEAM_WIDTH: 25, // Width of the beam
   DARK_MULTI_SHOOT_CHANCE: 0.012,
   DARK_LASER_SPACING: 3, // 3 pixel spacing between lasers
-  DARK_SHIELD_CONNECTOR_RANGE: 200, // Range for shield connectors
+  DARK_SHIELD_CONNECTOR_RANGE: 400, // Range for shield connectors
   DARK_SHIELD_MAX_CONNECTIONS: 3, // Maximum enemies to shield
   DARK_CONNECTOR_WIDTH: 3, // Width of connector lines
 };

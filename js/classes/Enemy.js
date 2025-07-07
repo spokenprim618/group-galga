@@ -838,7 +838,7 @@ class DarkShieldEnemy extends Alien {
 
     // Check all enemies in the game
     for (let enemy of gameManager.groupAlien) {
-      if (!enemy || enemy === this) continue;
+      if (!enemy || enemy === this || enemy.type === "darkShield") continue;
 
       let enemyCenter = enemy.getCenter();
       let distance = dist(center.x, center.y, enemyCenter.x, enemyCenter.y);
@@ -862,16 +862,13 @@ class DarkShieldEnemy extends Alien {
   connectToEnemy(enemy) {
     if (this.connectedEnemies.length >= this.maxConnections) return;
     if (enemy.isInvulnerable) return;
+    if (enemy === this) return; // Prevent self-connection
 
     // Add enemy to connected list
     this.connectedEnemies.push(enemy);
 
     // Create connector line
     let connector = {
-      startX: this.getCenter().x,
-      startY: this.getCenter().y,
-      endX: enemy.getCenter().x,
-      endY: enemy.getCenter().y,
       enemy: enemy,
     };
     this.connectors.push(connector);
@@ -879,14 +876,19 @@ class DarkShieldEnemy extends Alien {
     // Make enemy invulnerable
     enemy.isInvulnerable = true;
     enemy.shieldedBy = this;
+
+    console.log(
+      `Dark shield connected to ${enemy.type}, total connections: ${this.connectedEnemies.length}`
+    );
   }
 
   clearConnections() {
     // Remove invulnerability from all connected enemies
     for (let enemy of this.connectedEnemies) {
-      if (enemy && enemy.isInvulnerable) {
+      if (enemy && enemy.isInvulnerable && enemy.shieldedBy === this) {
         enemy.isInvulnerable = false;
         enemy.shieldedBy = null;
+        console.log(`Dark shield disconnected from ${enemy.type}`);
       }
     }
 
@@ -899,36 +901,7 @@ class DarkShieldEnemy extends Alien {
     // Draw the shield enemy
     image(this.image, this.xPos, this.yPos, this.size, this.size);
 
-    // Draw connectors
-    this.drawConnectors();
-  }
-
-  drawConnectors() {
-    stroke(100, 0, 150, 200); // Dark purple with transparency
-    strokeWeight(GAME_CONFIG.DARK_CONNECTOR_WIDTH);
-    noFill();
-
-    for (let connector of this.connectors) {
-      // Update connector positions (enemies might have moved)
-      if (connector.enemy) {
-        connector.endX = connector.enemy.getCenter().x;
-        connector.endY = connector.enemy.getCenter().y;
-      }
-
-      // Draw connector line
-      line(connector.startX, connector.startY, connector.endX, connector.endY);
-
-      // Draw small connector nodes at each end
-      fill(100, 0, 150, 150);
-      noStroke();
-      ellipse(connector.startX, connector.startY, 8, 8);
-      ellipse(connector.endX, connector.endY, 8, 8);
-    }
-
-    // Reset stroke
-    stroke(0);
-    strokeWeight(1);
-    noFill();
+    // Connectors are now drawn centrally in GameManager.drawAllDarkShieldConnectors()
   }
 
   // Override shouldShoot to return false since this enemy doesn't use bullets

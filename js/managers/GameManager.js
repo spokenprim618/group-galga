@@ -277,7 +277,8 @@ class GameManager {
           this.groupAlien[i].shouldShoot() &&
           this.player &&
           this.groupAlien[i].type !== "iceBeam" &&
-          this.groupAlien[i].type !== "darkBeam"
+          this.groupAlien[i].type !== "darkBeam" &&
+          this.groupAlien[i].type !== "darkShield"
         ) {
           let bullet;
 
@@ -335,6 +336,48 @@ class GameManager {
         this.groupAlien.splice(i, 1);
       }
     }
+
+    // Draw all dark shield connectors after all enemies are drawn
+    this.drawAllDarkShieldConnectors();
+  }
+
+  drawAllDarkShieldConnectors() {
+    // Set up connector drawing
+    stroke(100, 0, 150, 200); // Dark purple with transparency
+    strokeWeight(GAME_CONFIG.DARK_CONNECTOR_WIDTH);
+    noFill();
+
+    // Draw connectors for all dark shield enemies
+    for (let enemy of this.groupAlien) {
+      if (enemy && enemy.type === "darkShield") {
+        let center = enemy.getCenter();
+
+        for (let connector of enemy.connectors) {
+          if (connector.enemy) {
+            let enemyCenter = connector.enemy.getCenter();
+
+            // Draw connector line from shield to enemy
+            line(center.x, center.y, enemyCenter.x, enemyCenter.y);
+
+            // Draw small connector nodes at each end
+            fill(100, 0, 150, 150);
+            noStroke();
+            ellipse(center.x, center.y, 8, 8);
+            ellipse(enemyCenter.x, enemyCenter.y, 8, 8);
+
+            // Reset stroke for next connector
+            stroke(100, 0, 150, 200);
+            strokeWeight(GAME_CONFIG.DARK_CONNECTOR_WIDTH);
+            noFill();
+          }
+        }
+      }
+    }
+
+    // Reset stroke at the end
+    stroke(0);
+    strokeWeight(1);
+    noFill();
   }
 
   updateBullets() {
