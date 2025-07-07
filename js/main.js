@@ -128,6 +128,81 @@ function keyPressed() {
       WeaponSystem.fireIceBullet();
     }
   }
+
+  // Start at different enemy types for testing
+  if (gameState.state === GAME_CONFIG.STATES.TITLE) {
+    if (key === "I" || key === "i") {
+      console.log("Starting game at ice rounds (wave 15)...");
+      gameState.startGame();
+      gameState.currentRound = 15; // Set to first ice wave
+      gameManager.reset();
+      gameManager.spawnAliens();
+      console.log(
+        "Game started at wave 15 (ice rounds). State:",
+        gameState.state
+      );
+    }
+
+    if (key === "F" || key === "f") {
+      console.log("Starting game at fire rounds (wave 30)...");
+      gameState.startGame();
+      gameState.currentRound = 30; // Set to first fire wave
+      gameManager.reset();
+      gameManager.spawnAliens();
+      console.log(
+        "Game started at wave 30 (fire rounds). State:",
+        gameState.state
+      );
+    }
+
+    if (key === "T" || key === "t") {
+      console.log("Starting game at toxic rounds (wave 50)...");
+      gameState.startGame();
+      gameState.currentRound = 50; // Set to first toxic wave
+      gameManager.reset();
+      gameManager.spawnAliens();
+      console.log(
+        "Game started at wave 50 (toxic rounds). State:",
+        gameState.state
+      );
+    }
+
+    if (key === "D" || key === "d") {
+      console.log("Starting game at dark rounds (wave 60)...");
+      gameState.startGame();
+      gameState.currentRound = 60; // Set to first dark wave
+      gameManager.reset();
+      gameManager.spawnAliens();
+      console.log(
+        "Game started at wave 60 (dark rounds). State:",
+        gameState.state
+      );
+    }
+
+    if (key === "B" || key === "b") {
+      console.log("Starting game at ice beam rounds (wave 25)...");
+      gameState.startGame();
+      gameState.currentRound = 25; // Set to ice beam wave
+      gameManager.reset();
+      gameManager.spawnAliens();
+      console.log(
+        "Game started at wave 25 (ice beam rounds). State:",
+        gameState.state
+      );
+    }
+
+    if (key === "S" || key === "s") {
+      console.log("Starting game at dark shield rounds (wave 60)...");
+      gameState.startGame();
+      gameState.currentRound = 60; // Set to dark shield wave
+      gameManager.reset();
+      gameManager.spawnAliens();
+      console.log(
+        "Game started at wave 60 (dark shield rounds). State:",
+        gameState.state
+      );
+    }
+  }
 }
 
 function startGame() {

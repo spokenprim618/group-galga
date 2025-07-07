@@ -14,18 +14,65 @@ class GameManager {
 
     // Determine enemy types based on current round
     let enemyTypes = this.getEnemyTypesForRound();
+    let round = gameState.currentRound;
 
-    // Spawn enemies based on round (reduced for testing)
-    let numEnemies = 3; // Fixed number for testing instead of scaling
+    // Spawn 5 enemies per wave
+    let numEnemies = 5;
+
+    // Determine which enemy type we're in and ensure at least 2 drones of that type
+    let currentEnemyType = "";
+    if (round >= 15 && round < 30) {
+      currentEnemyType = "ice"; // Ice rounds
+    } else if (round >= 30 && round < 50) {
+      currentEnemyType = "fire"; // Fire rounds
+    } else if (round >= 50 && round < 60) {
+      currentEnemyType = "toxic"; // Toxic rounds
+    } else if (round >= 60 && round < 75) {
+      currentEnemyType = "dark"; // Dark rounds
+    }
+
+    let droneCount = 0;
+    let maxDrones = 3; // Allow up to 3 drones
+
     for (let i = 0; i < numEnemies; i++) {
       let x = random(50, width - 100);
       let y = random(50, 200);
 
-      // Randomly select enemy type from available types
-      let enemyType = random(enemyTypes);
+      let enemyType;
+
+      // Ensure at least 2 drones of the current enemy type spawn
+      if (droneCount < 2 && currentEnemyType !== "") {
+        // Force a drone type of the current enemy type
+        let droneTypes = enemyTypes.filter((type) =>
+          type.includes(currentEnemyType + "Drone")
+        );
+        if (droneTypes.length > 0) {
+          enemyType = random(droneTypes);
+          droneCount++;
+        } else {
+          // If no drone types available, use any available type
+          enemyType = random(enemyTypes);
+        }
+      } else if (droneCount < maxDrones && random() < 0.4) {
+        // 40% chance to spawn additional drones (up to maxDrones)
+        let droneTypes = enemyTypes.filter((type) => type.includes("Drone"));
+        if (droneTypes.length > 0) {
+          enemyType = random(droneTypes);
+          droneCount++;
+        } else {
+          enemyType = random(enemyTypes);
+        }
+      } else {
+        // Random selection from available types
+        enemyType = random(enemyTypes);
+      }
+
       let enemy;
 
       switch (enemyType) {
+        case "regular":
+          enemy = new Alien(x, y, assetManager.getImage("enemy"));
+          break;
         case "iceDrone":
           enemy = new IceDrone(x, y);
           break;
@@ -38,13 +85,46 @@ class GameManager {
         case "iceBeam":
           enemy = new IceBeamEnemy(x, y);
           break;
+        case "fireDrone":
+          enemy = new FireDrone(x, y);
+          break;
+        case "fireSpeed":
+          enemy = new FireSpeed(x, y);
+          break;
+        case "rocket":
+          enemy = new RocketEnemy(x, y);
+          break;
+        case "toxicDrone":
+          enemy = new ToxicDrone(x, y);
+          break;
+        case "toxicGas":
+          enemy = new ToxicGas(x, y);
+          break;
+        case "darkDrone":
+          enemy = new DarkDrone(x, y);
+          break;
+        case "darkBeam":
+          enemy = new DarkBeamEnemy(x, y);
+          break;
+        case "darkMulti":
+          enemy = new DarkMultiEnemy(x, y);
+          break;
+        case "darkShield":
+          enemy = new DarkShieldEnemy(x, y);
+          break;
         default:
+          console.warn("Unknown enemy type:", enemyType, "using regular enemy");
           enemy = new Alien(x, y, assetManager.getImage("enemy"));
           break;
       }
 
       this.groupAlien.push(enemy);
     }
+
+    // Debug logging
+    console.log(
+      `Wave ${round}: Spawned ${this.groupAlien.length} enemies, ${droneCount} drones`
+    );
   }
 
   getEnemyTypesForRound() {
@@ -57,11 +137,57 @@ class GameManager {
       // Waves 20-24: Ice slower and ice speed
       return ["iceSlower", "iceSpeed"];
     } else if (round >= 25 && round < 30) {
-      // Waves 25-29: Ice beam enemies
-      return ["iceBeam"];
-    } else if (round >= 30) {
-      // Wave 30+: All ice types including beam
-      return ["iceDrone", "iceSlower", "iceSpeed", "iceBeam"];
+      // Waves 25-29: Ice beam enemies and ice drones
+      return ["iceBeam", "iceDrone"];
+    } else if (round >= 30 && round < 35) {
+      // Waves 30-34: Fire drones
+      return ["fireDrone"];
+    } else if (round >= 35 && round < 40) {
+      // Waves 35-39: Fire drones, fire speed, and rocket enemies
+      return ["fireDrone", "fireSpeed", "rocket"];
+    } else if (round >= 40 && round < 50) {
+      // Waves 40-49: All enemy types including fire and rocket
+      return [
+        "iceDrone",
+        "iceSlower",
+        "iceSpeed",
+        "iceBeam",
+        "fireDrone",
+        "fireSpeed",
+        "rocket",
+      ];
+    } else if (round >= 50 && round < 55) {
+      // Waves 50-54: Toxic drones
+      return ["toxicDrone"];
+    } else if (round >= 55 && round < 60) {
+      // Waves 55-59: Toxic gas enemies and toxic drones
+      return ["toxicGas", "toxicDrone"];
+    } else if (round >= 60 && round < 65) {
+      // Waves 60-64: Dark drones and dark shields
+      return ["darkDrone", "darkShield"];
+    } else if (round >= 65 && round < 70) {
+      // Waves 65-69: Dark beam enemies, dark drones, and dark shields
+      return ["darkBeam", "darkDrone", "darkShield"];
+    } else if (round >= 70 && round < 75) {
+      // Waves 70-74: Dark multi enemies, dark drones, and dark shields
+      return ["darkMulti", "darkDrone", "darkShield"];
+    } else if (round >= 75) {
+      // Wave 75+: All enemy types including dark
+      return [
+        "iceDrone",
+        "iceSlower",
+        "iceSpeed",
+        "iceBeam",
+        "fireDrone",
+        "fireSpeed",
+        "rocket",
+        "toxicDrone",
+        "toxicGas",
+        "darkDrone",
+        "darkBeam",
+        "darkMulti",
+        "darkShield",
+      ];
     } else {
       // Waves 1-14: Regular enemies
       return ["regular"];
@@ -135,7 +261,11 @@ class GameManager {
 
       try {
         // Use update method for ice beam enemies, move for others
-        if (this.groupAlien[i].type === "iceBeam") {
+        if (
+          this.groupAlien[i].type === "iceBeam" ||
+          this.groupAlien[i].type === "darkBeam" ||
+          this.groupAlien[i].type === "darkShield"
+        ) {
           this.groupAlien[i].update();
         } else {
           this.groupAlien[i].move();
@@ -146,7 +276,8 @@ class GameManager {
         if (
           this.groupAlien[i].shouldShoot() &&
           this.player &&
-          this.groupAlien[i].type !== "iceBeam"
+          this.groupAlien[i].type !== "iceBeam" &&
+          this.groupAlien[i].type !== "darkBeam"
         ) {
           let bullet;
 
@@ -157,6 +288,17 @@ class GameManager {
             this.groupAlien[i].type === "iceSlower"
           ) {
             // Ice enemies create their own bullets
+            bullet = this.groupAlien[i].createBullet();
+          } else if (
+            this.groupAlien[i].type === "fireDrone" ||
+            this.groupAlien[i].type === "fireSpeed" ||
+            this.groupAlien[i].type === "rocket" ||
+            this.groupAlien[i].type === "toxicDrone" ||
+            this.groupAlien[i].type === "toxicGas" ||
+            this.groupAlien[i].type === "darkDrone" ||
+            this.groupAlien[i].type === "darkMulti"
+          ) {
+            // Fire, rocket, toxic, and dark enemies create their own bullets
             bullet = this.groupAlien[i].createBullet();
           } else {
             // Regular enemies create standard enemy bullets
@@ -213,6 +355,13 @@ class GameManager {
           this.groupBullet[i] instanceof SawBladeBullet &&
           this.groupBullet[i].checkCollision(this.groupAlien[j])
         ) {
+          // Check if enemy is invulnerable
+          if (this.groupAlien[j].isInvulnerable) {
+            // Remove the bullet but not the enemy
+            this.groupBullet.splice(i, 1);
+            break;
+          }
+
           // Spawn pickup at enemy location before removing it
           this.spawnPickup(this.groupAlien[j].xPos, this.groupAlien[j].yPos);
           // Remove the alien only (not the saw blade)
@@ -224,6 +373,18 @@ class GameManager {
           this.groupBullet[i] &&
           this.groupBullet[i].checkCollision(this.groupAlien[j])
         ) {
+          // Check if enemy is invulnerable
+          if (this.groupAlien[j].isInvulnerable) {
+            // Remove the bullet but not the enemy
+            this.groupBullet.splice(i, 1);
+            break;
+          }
+
+          // Handle dark shield enemy destruction
+          if (this.groupAlien[j].type === "darkShield") {
+            this.groupAlien[j].onDestroy();
+          }
+
           // Spawn pickup at enemy location before removing it
           this.spawnPickup(this.groupAlien[j].xPos, this.groupAlien[j].yPos);
           // Remove both the bullet and the alien
@@ -292,6 +453,33 @@ class GameManager {
             damage = GAME_CONFIG.ICE_BULLET_DAMAGE; // 20 damage for ice bullets
           } else if (this.groupEnemyBullet[i] instanceof IceWaveBullet) {
             damage = GAME_CONFIG.ICE_WAVE_DAMAGE; // 20 damage for ice wave
+          } else if (this.groupEnemyBullet[i] instanceof FireBullet) {
+            damage = GAME_CONFIG.FIRE_BULLET_DAMAGE; // 15 damage for fire bullets
+          } else if (this.groupEnemyBullet[i] instanceof RocketBullet) {
+            // Rocket bullets attach to player and do damage over time
+            this.groupEnemyBullet[i].attachToPlayer(this.player);
+            continue; // Don't remove the rocket, let it attach
+          } else if (this.groupEnemyBullet[i] instanceof ToxicBullet) {
+            damage = GAME_CONFIG.TOXIC_BULLET_DAMAGE;
+          } else if (this.groupEnemyBullet[i] instanceof DarkBullet) {
+            damage = GAME_CONFIG.DARK_BULLET_DAMAGE;
+          } else if (this.groupEnemyBullet[i] instanceof DarkMultiBullet) {
+            damage = GAME_CONFIG.DARK_BULLET_DAMAGE;
+          } else if (this.groupEnemyBullet[i] instanceof ToxicGasBullet) {
+            // If not exploded, trigger explosion
+            if (this.groupEnemyBullet[i].shouldExplode()) {
+              this.groupEnemyBullet[i].explode();
+              continue; // Don't remove yet
+            }
+            // If exploded and player is in gas, apply damage
+            if (
+              this.groupEnemyBullet[i].hasExploded &&
+              this.groupEnemyBullet[i].checkExplosionCollision(this.player)
+            ) {
+              damage = GAME_CONFIG.TOXIC_GAS_DAMAGE;
+            } else {
+              continue; // No damage if not in gas
+            }
           }
 
           // Use shield first if available, otherwise take health damage
@@ -310,8 +498,17 @@ class GameManager {
           continue;
         }
 
-        // Remove bullets that are off screen
-        if (this.groupEnemyBullet[i].isOffScreen()) {
+        // Apply damage over time for attached rockets
+        if (this.groupEnemyBullet[i] instanceof RocketBullet) {
+          this.groupEnemyBullet[i].applyDamageOverTime();
+        }
+
+        // Remove bullets that are off screen or should be removed
+        if (
+          this.groupEnemyBullet[i].isOffScreen() ||
+          (this.groupEnemyBullet[i].shouldRemove &&
+            this.groupEnemyBullet[i].shouldRemove())
+        ) {
           this.groupEnemyBullet.splice(i, 1);
         }
       } catch (error) {
@@ -344,6 +541,16 @@ class GameManager {
           if (
             this.groupIceBullet[i].checkExplosionCollision(this.groupAlien[j])
           ) {
+            // Check if enemy is invulnerable
+            if (this.groupAlien[j].isInvulnerable) {
+              continue; // Skip invulnerable enemies
+            }
+
+            // Handle dark shield enemy destruction
+            if (this.groupAlien[j].type === "darkShield") {
+              this.groupAlien[j].onDestroy();
+            }
+
             // Spawn pickup at enemy location before removing it
             this.spawnPickup(this.groupAlien[j].xPos, this.groupAlien[j].yPos);
 

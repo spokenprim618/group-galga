@@ -37,6 +37,32 @@ class AssetManager {
       this.images.sawBlade = loadImage(IMAGE_PATHS.SAW_BLADE);
       this.images.shield = loadImage(IMAGE_PATHS.SHIELD);
       this.images.speed = loadImage(IMAGE_PATHS.SPEED);
+
+      // Fire enemies
+      this.images.fireDrone = loadImage(IMAGE_PATHS.FIRE_DRONE);
+      this.images.fireSpeed = loadImage(IMAGE_PATHS.FIRE_SPEED);
+      this.images.fireBullet = loadImage(IMAGE_PATHS.FIRE_BULLET);
+
+      // Rocket enemies
+      this.images.rocket = loadImage(IMAGE_PATHS.ROCKET);
+      this.images.sidewinder = loadImage(IMAGE_PATHS.SIDEWINDER);
+
+      // Toxic enemies
+      this.images.toxicDrone = loadImage(IMAGE_PATHS.TOXIC_DRONE);
+      this.images.toxicGas = loadImage(IMAGE_PATHS.TOXIC_GAS);
+      this.images.toxicBullet = loadImage(IMAGE_PATHS.TOXIC_BULLET);
+      this.images.toxicCan = loadImage(IMAGE_PATHS.TOXIC_CAN);
+      this.images.toxicExplo = loadImage(IMAGE_PATHS.TOXIC_EXPLO);
+
+      // Dark enemies
+      this.images.darkDrone = loadImage(IMAGE_PATHS.DARK_DRONE);
+      this.images.darkBeam = loadImage(IMAGE_PATHS.DARK_BEAM);
+      this.images.darkMulti = loadImage(IMAGE_PATHS.DARK_MULTI);
+      this.images.darkShield = loadImage(IMAGE_PATHS.DARK_SHIELD);
+      this.images.darkBullet = loadImage(IMAGE_PATHS.DARK_BULLET);
+      this.images.darkLaser = loadImage(IMAGE_PATHS.DARK_LASER);
+      this.images.darkBeamBullet = loadImage(IMAGE_PATHS.DARK_BEAM_BULLET);
+
       console.log("All images loaded successfully");
     } catch (error) {
       console.error("Error loading images:", error);

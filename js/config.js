@@ -34,6 +34,21 @@ const GAME_CONFIG = {
   ICE_WAVE_SPEED: 1.5, // Slower than regular bullets
   ICE_BULLET_SPEED: 2, // Same as regular enemy bullets
 
+  // Fire enemy settings
+  FIRE_DRONE_SHOOT_CHANCE: 0.015, // 1.5% per frame (slightly less than regular)
+  FIRE_SPEED_SHOOT_CHANCE: 0.015, // Same as fire drone
+  FIRE_SPEED_MULTIPLIER: 1.5, // 50% faster movement like ice speed
+  FIRE_BULLET_SPEED: 3, // Slightly faster than regular bullets
+  FIRE_BULLET_DAMAGE: 15, // Fire bullets do 15 damage
+
+  // Rocket enemy settings
+  ROCKET_SHOOT_CHANCE: 0.008, // 0.8% per frame (much less frequent)
+  ROCKET_SPEED: 1.5, // Slower movement
+  ROCKET_BULLET_SPEED: 1.5, // Very slow rockets
+  ROCKET_DAMAGE_PER_SECOND: 5, // 5 damage per second
+  ROCKET_TOTAL_DAMAGE: 30, // Total damage over 6 seconds
+  ROCKET_DURATION: 6000, // 6 seconds duration
+
   // Pickup settings
   PICKUP_SIZE: 40,
   PICKUP_SPEED: 1,
@@ -69,6 +84,29 @@ const GAME_CONFIG = {
     PLAYING: 1,
     GAME_OVER: 3,
   },
+
+  // Toxic enemy settings
+  TOXIC_DRONE_SHOOT_CHANCE: 0.015,
+  TOXIC_BULLET_SPEED: 2.5,
+  TOXIC_BULLET_DAMAGE: 12,
+  TOXIC_GAS_SHOOT_CHANCE: 0.01,
+  TOXIC_GAS_EXPLOSION_SIZE: 180,
+  TOXIC_GAS_EXPLOSION_DURATION: 1200, // ms
+  TOXIC_GAS_DAMAGE: 25,
+
+  // Dark enemy settings
+  DARK_DRONE_SHOOT_CHANCE: 0.015,
+  DARK_BULLET_SPEED: 2.5,
+  DARK_BULLET_DAMAGE: 10,
+  DARK_BEAM_DAMAGE: 8, // Dark beam does 8 damage
+  DARK_BEAM_RANGE: 400, // Range for beam activation
+  DARK_BEAM_LENGTH: 350, // Length of the beam
+  DARK_BEAM_WIDTH: 25, // Width of the beam
+  DARK_MULTI_SHOOT_CHANCE: 0.012,
+  DARK_LASER_SPACING: 3, // 3 pixel spacing between lasers
+  DARK_SHIELD_CONNECTOR_RANGE: 200, // Range for shield connectors
+  DARK_SHIELD_MAX_CONNECTIONS: 3, // Maximum enemies to shield
+  DARK_CONNECTOR_WIDTH: 3, // Width of connector lines
 };
 
 // Image paths
@@ -104,4 +142,29 @@ const IMAGE_PATHS = {
   REPAIR: "images/pick-ups/repair (1).png",
   SHIELD: "images/pick-ups/shield.png",
   SPEED: "images/pick-ups/speed.png",
+
+  // Fire enemies
+  FIRE_DRONE: "images/enemies/fire/fire2-drone.png",
+  FIRE_SPEED: "images/enemies/fire/fire3-speed.png",
+  FIRE_BULLET: "images/bullets/enemy-bullets/fire/fire-bullet.png",
+
+  // Rocket enemies
+  ROCKET: "images/enemies/fire/fire1-rocket.png",
+  SIDEWINDER: "images/bullets/enemy-bullets/fire/sidewinder.png",
+
+  // Toxic enemies
+  TOXIC_DRONE: "images/enemies/toxic/toxic1-drone.png",
+  TOXIC_GAS: "images/enemies/toxic/toxic2-gas.png",
+  TOXIC_BULLET: "images/bullets/enemy-bullets/toxic/tox-bullet.png",
+  TOXIC_CAN: "images/bullets/enemy-bullets/toxic/tox-can.png",
+  TOXIC_EXPLO: "images/bullets/enemy-bullets/toxic/tox-explo.png",
+
+  // Dark enemies
+  DARK_DRONE: "images/enemies/dark/dark5-drone.png",
+  DARK_BEAM: "images/enemies/dark/dark1-beam.png",
+  DARK_MULTI: "images/enemies/dark/dark4-multi.png",
+  DARK_SHIELD: "images/enemies/dark/dark2-shield.png",
+  DARK_BULLET: "images/bullets/enemy-bullets/dark/dark-bullet.png",
+  DARK_LASER: "images/bullets/enemy-bullets/dark/dark-laz.png",
+  DARK_BEAM_BULLET: "images/bullets/enemy-bullets/dark/dark-beam.png",
 };
