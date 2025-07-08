@@ -9,7 +9,7 @@ class Player {
 
   updateRotation() {
     // Calculate angle between center of ship and mouse
-    let dx = mouseX - (this.xPos + this.size / 2);
+    let dx = mouseX - (this.xPos + this.size / 2)-26;
     let dy = mouseY - (this.yPos + this.size / 2);
     // Restore +PI/2 offset so nose points up if sprite is oriented that way
     this.rotation = atan2(dy, dx) + PI / 2;

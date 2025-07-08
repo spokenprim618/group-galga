@@ -1,5 +1,5 @@
 class FlameSystem {
-  static checkFlameConeCollision(x, y, rotation, layers) {
+  static checkFlameConeCollision(x, y, layers) {
     // Safety check: ensure player exists
     if (!gameManager.player) return;
 
@@ -13,9 +13,9 @@ class FlameSystem {
         let offsetX = (j - (numFlames - 1) / 2) * flameSpacing;
         let offsetY = -i * layerSpacing;
 
-        // Calculate flame position in world coordinates using regular rotation
-        let flameX = x + offsetX * cos(rotation) - offsetY * sin(rotation);
-        let flameY = y + offsetX * sin(rotation) + offsetY * cos(rotation);
+        // Calculate flame position in world coordinates (no rotation)
+        let flameX = x + offsetX;
+        let flameY = y + offsetY;
         let size = 20 + gameState.currentFrame * 2; // Size varies from 20 to 28
 
         // Check collision with aliens
@@ -92,28 +92,28 @@ class FlameSystem {
             gameState.lastFrameTime = currentTime;
           }
 
-          // Draw flame cone attached to player sprite
-          let flameX = gameManager.player.xPos + gameManager.player.size / 2;
-          let flameY = gameManager.player.yPos + gameManager.player.size / 2- ;
+          // Draw flame cone attached to player sprite (no rotation)
+          let flameX =
+            gameManager.player.xPos + gameManager.player.size / 2 + 25;
+          let flameY =
+            gameManager.player.yPos + gameManager.player.size / 2 - 50;
 
           let flameImage =
             assetManager.getFlameConeGraphic() ||
             assetManager.getFlameConeFallbackGraphic();
 
           if (flameImage) {
-            // Draw flame cone with rotation
             push();
             translate(flameX, flameY);
             rotate(gameManager.player.rotation);
-            image(flameImage, -flameImage.width / 2, -flameImage.height / 2);
+            image(flameImage, -flameImage.width / 2, -flameImage.height / 2); // center of image at tip
             pop();
           } else {
-            // Fallback: draw simple rectangle
             push();
             translate(flameX, flameY);
             rotate(gameManager.player.rotation);
             fill(255, 100, 0, 200);
-            rect(-10, -10, 20, 20);
+            rect(-10, -10, 20, 20); // center of rect at tip
             pop();
           }
         }
@@ -123,8 +123,7 @@ class FlameSystem {
         // Check flame cone collision with aliens (always check for gameplay)
         this.checkFlameConeCollision(
           gameManager.player.xPos + gameManager.player.size / 2,
-          gameManager.player.yPos + gameManager.player.size / 2,
-          gameManager.player.rotation,
+          gameManager.player.yPos + gameManager.player.size / 2 - 10,
           4
         );
       }
