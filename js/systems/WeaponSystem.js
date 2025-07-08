@@ -4,7 +4,7 @@ class WeaponSystem {
       let currentTime = millis();
       if (currentTime - gameState.lastShotTime >= GAME_CONFIG.SHOOT_COOLDOWN) {
         let bulletSpawnPos = gameManager.player.getBulletSpawnPosition();
-
+        // Angel mode: override
         if (gameState.isAngelMode) {
           this.fireAngelBullets(bulletSpawnPos.x, bulletSpawnPos.y);
         } else if (gameState.isScrapMode) {
@@ -12,11 +12,24 @@ class WeaponSystem {
         } else if (gameState.isLaserMode) {
           this.fireLaserBullets(bulletSpawnPos.x, bulletSpawnPos.y);
         } else {
+          // Dark mode (hole) uses regular bullets for left click
           this.fireRegularBullet(bulletSpawnPos.x, bulletSpawnPos.y);
         }
-
         gameState.lastShotTime = currentTime;
       }
+    }
+  }
+
+  // Add a static method to handle Q key for black bullet in dark mode
+  static handleSpecialBulletKey(key) {
+    if ((key === "Q" || key === "q") && gameState.isHoleMode) {
+      // Only fire black bullet if in dark mode (hole)
+      let bulletSpawnPos = gameManager.player.getBulletSpawnPosition();
+      gameManager.fireBlackBullet(
+        bulletSpawnPos.x,
+        bulletSpawnPos.y,
+        gameManager.player.rotation
+      );
     }
   }
 

@@ -109,6 +109,23 @@ const GAME_CONFIG = {
   DARK_CONNECTOR_WIDTH: 3, // Width of connector lines
 };
 
+// === MODE AND PICKUP CLASSIFICATION FOR FUTURE REFERENCE ===
+// Modes with special firing modes (but use regular bullets as base):
+//   - hole (dark), fire, ice
+// Modes that override the base bullet (replace regular bullet):
+//   - scrap (uses saw blade as base bullet), laz, angel
+// Modes with no special firing mode (use regular bullets):
+//   - (none currently)
+//
+// Status pickups (can always be picked up, do not affect bullet type):
+//   - speed, shield, life, repair
+//
+// Only one main mode can be active at a time. Status pickups are always allowed.
+
+const MODES_WITH_SPECIAL_FIRING_MODE = ["hole", "fire", "ice"];
+const MODES_WITH_BULLET_OVERRIDE = ["scrap", "laz", "angel"];
+const MODES_WITH_NO_SPECIAL_FIRING_MODE = [];
+
 // Image paths
 const IMAGE_PATHS = {
   PLAYER: "images/player/player.png",

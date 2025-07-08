@@ -38,6 +38,7 @@
     <script src="js/config.js"></script>
 
     <!-- Classes -->
+    <script src="js/classes/PlayerResistances.js"></script>
     <script src="js/classes/Player.js"></script>
     <script src="js/classes/Bullet.js"></script>
     <script src="js/classes/Enemy.js"></script>
@@ -64,6 +65,14 @@
         const debugDiv = document.getElementById("debugInfo");
         if (typeof gameState !== "undefined") {
           debugDiv.innerHTML = `
+              <p style='color:${
+                gameState.isInvincible ? "#ff0" : "#0f0"
+              };font-weight:bold;'>${
+            gameState.isInvincible
+              ? "INVINCIBLE MODE ON"
+              : "Invincible mode off"
+          }</p>
+              <p><b>Mode Test Keys:</b> 1=Fire, 2=Ice, 3=Laz, 4=Scrap,<br> 5=Speed, 6=Shield, 7=Life, 8=Repair, 9=Hole, 0=Angel, R=Restart</p>
               <p>State: ${gameState.state}</p>
               <p>Health: ${gameState.health}</p>
               <p>Shields: ${gameState.shields}</p>
@@ -81,6 +90,21 @@
 
       // Update debug info every 100ms
       setInterval(updateDebugInfo, 100);
+
+      // Add a key handler for R to restart to main menu
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "r" || e.key === "R") {
+          if (typeof gameState !== "undefined") {
+            gameState.state = GAME_CONFIG.STATES.TITLE;
+            if (
+              typeof UI !== "undefined" &&
+              typeof UI.drawTitleScreen === "function"
+            ) {
+              UI.drawTitleScreen();
+            }
+          }
+        }
+      });
 
       // Override the startGame function to start at wave 25
       function startGame() {

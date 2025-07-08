@@ -21,6 +21,7 @@ class GameState {
     this.scrapModeStartTime = 0;
     this.isSpeedMode = false;
     this.speedModeStartTime = 0;
+    this.isAnyModeActive = false; // True if any main mode is active
 
     // Flame thrower state
     this.isFiring = false;
@@ -61,6 +62,7 @@ class GameState {
     this.scrapModeStartTime = 0;
     this.isSpeedMode = false;
     this.speedModeStartTime = 0;
+    this.isAnyModeActive = false;
 
     // Reset flame state
     this.isFiring = false;
@@ -100,6 +102,7 @@ class GameState {
     this.scrapModeStartTime = 0;
     this.isSpeedMode = false;
     this.speedModeStartTime = 0;
+    this.isAnyModeActive = false;
 
     // Reset flame state
     this.isFiring = false;
@@ -126,7 +129,19 @@ class GameState {
       return;
     }
 
-    // Only one powerup at a time (fire, ice, laser, scrap)
+    // Only one main mode at a time (fire, ice, laz, scrap, hole, angel)
+    const MAIN_MODE_TYPES = [
+      "fire-up",
+      "ice-up",
+      "laz-up",
+      "scrap",
+      "hole",
+      "angel",
+    ];
+    if (MAIN_MODE_TYPES.includes(type)) {
+      if (this.isAnyModeActive) return; // Don't switch if a mode is already active
+      this.isAnyModeActive = true;
+    }
     switch (type) {
       case "fire-up":
         this.isFireMode = true;
@@ -164,6 +179,9 @@ class GameState {
         }
         break;
     }
+    if (typeof gameManager !== "undefined" && gameManager.player) {
+      gameManager.player.setResistancesForPowerup(type);
+    }
   }
 
   deactivateAllPowerups() {
@@ -177,6 +195,7 @@ class GameState {
     this.scrapModeStartTime = 0;
     this.isSpeedMode = false;
     this.speedModeStartTime = 0;
+    this.isAnyModeActive = false;
   }
 
   checkPowerupExpiration() {
