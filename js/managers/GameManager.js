@@ -6,7 +6,6 @@ class GameManager {
     this.groupPickup = [];
     this.groupIceBullet = [];
     this.groupBlackBullet = [];
-    this.groupBlackHole = [];
     this.player = null;
     // Black hole feature state
     this.holePickupCollected = false;
@@ -471,7 +470,11 @@ class GameManager {
       // Check collision with player
       if (this.player && this.groupPickup[i].checkCollision(this.player)) {
         // Apply pickup effect
-        gameState.activatePowerup(this.groupPickup[i].type);
+        const type = this.groupPickup[i].type;
+        gameState.activatePowerup(type);
+        if (type === "dark") {
+          this.player.image = assetManager.getImageForType("dark-player");
+        }
         this.updatePlayerImage();
         this.groupPickup.splice(i, 1);
         continue;
@@ -642,10 +645,6 @@ class GameManager {
   }
 
   updatePlayerImage() {
-    if (this.isBlackHoleMode && !gameState.isAngelMode) {
-      this.player.image = assetManager.getImageForType("player1"); // Or a special image if desired
-      return;
-    }
     if (gameState.isFireMode) {
       this.player.image = assetManager.getImageForType("fire2");
     } else if (gameState.isIceMode) {
@@ -732,10 +731,7 @@ class GameManager {
     if (gameState.isAngelMode) return; // Block in angel mode
     this.blackBulletUses++;
     const blackBulletImg = assetManager.getImage("black-bullet");
-    const blackHoleImg = assetManager.getImage("blackhole");
-    this.groupBlackBullet.push(
-      new BlackBullet(x, y, angle, blackBulletImg, blackHoleImg)
-    );
+    this.groupBlackBullet.push(new BlackBullet(x, y, angle, blackBulletImg));
   }
 
   // Call this in the main update loop

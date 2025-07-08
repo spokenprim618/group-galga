@@ -95,7 +95,6 @@ function updateGame() {
   gameManager.updateBullets();
   gameManager.updatePickups();
   gameManager.updateEnemyBullets();
-  gameManager.updateBlackBulletsAndHoles();
   gameManager.updateIceBullets();
 
   // Handle player shooting (mouse-based)
@@ -159,8 +158,8 @@ function keyPressed() {
     console.log("Test: Repair activated");
   }
   if (key === "9") {
-    gameState.activatePowerup("hole");
-    console.log("Test: Hole pickup activated");
+    gameState.activatePowerup("dark");
+    console.log("Test: Dark mode activated");
   }
   if (key === "0") {
     gameState.activateAngelMode();

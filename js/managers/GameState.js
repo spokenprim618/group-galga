@@ -182,10 +182,6 @@ class GameState {
           this.shields++;
         }
         break;
-      case "black_bullet":
-        console.log("Black bullet powerup activated (2 uses)");
-        this.blackBulletUses = 2;
-        break;
     }
     if (typeof gameManager !== "undefined" && gameManager.player) {
       // Remove setResistancesForPowerup for 'hole' or 'dark'

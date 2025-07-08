@@ -86,8 +86,6 @@ class AssetManager {
       this.images.toxic2Gas = loadImage(IMAGE_PATHS.TOXIC2_GAS);
       this.images.toxic4Tank = loadImage(IMAGE_PATHS.TOXIC4_TANK);
       // New player bullets
-      this.images.blackBullet = loadImage(IMAGE_PATHS.BLACK_BULLET);
-      this.images.blackhole = loadImage(IMAGE_PATHS.BLACKHOLE);
       // New enemy bullets
       this.images.darkConnector = loadImage(IMAGE_PATHS.DARK_CONNECTOR);
       this.images.darkLaz = loadImage(IMAGE_PATHS.DARK_LAZ);
@@ -98,6 +96,8 @@ class AssetManager {
       this.images.toxBullet = loadImage(IMAGE_PATHS.TOX_BULLET);
       this.images.toxCan = loadImage(IMAGE_PATHS.TOX_CAN);
       this.images.toxExplo = loadImage(IMAGE_PATHS.TOX_EXPLO);
+      this.images.darkPlayer = loadImage(IMAGE_PATHS.DARK_PLAYER);
+      this.images.darkPickup = loadImage(IMAGE_PATHS.DARK_PICKUP);
 
       console.log("All images loaded successfully");
     } catch (error) {
@@ -176,6 +176,7 @@ class AssetManager {
       fire2: "fire2",
       ice2: "ice2",
       scrapShip: "scrapShip",
+      "dark-player": "darkPlayer",
       // Enemies
       enemy: "enemy",
       iceDrone: "iceDrone",
@@ -221,6 +222,8 @@ class AssetManager {
       repair: "repair",
       shield: "shield",
       speed: "speed",
+      dark: "darkPickup",
+      "dark-pickup": "darkPickup",
       // New enemies
       dark1Beam: "dark1Beam",
       dark2Shield: "dark2Shield",
@@ -238,8 +241,6 @@ class AssetManager {
       toxic2Gas: "toxic2Gas",
       toxic4Tank: "toxic4Tank",
       // New player bullets
-      blackBullet: "blackBullet",
-      blackhole: "blackhole",
       // New enemy bullets
       darkConnector: "darkConnector",
       darkLaz: "darkLaz",

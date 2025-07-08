@@ -139,6 +139,8 @@ const IMAGE_PATHS = {
   FIRE2: "images/player/fire2 (1).png",
   ICE2: "images/player/ice2 (1).png",
   SCRAP_SHIP: "images/player/scrap-ship.png",
+  DARK_PLAYER: "images/player/dark-player.png",
+  DARK_PICKUP: "images/pick-ups/dark-pickup.png",
 
   ENEMY: "images/enemies/n-enemy.png",
   ENEMY_OLD: "images/enemies/enemy.png", // legacy, not used by default
@@ -215,8 +217,7 @@ const IMAGE_PATHS = {
   TOXIC4_TANK: "images/enemies/toxic/toxic4-tank.png",
 
   // New player bullet images
-  BLACK_BULLET: "images/bullets/player-bullets/black-bullet.png",
-  BLACKHOLE: "images/bullets/player-bullets/blackhole.png",
+  // Remove BLACK_BULLET from IMAGE_PATHS if only used for player black bullet features.
 
   // New enemy bullet images
   DARK_CONNECTOR: "images/bullets/enemy-bullets/dark/dark-connector.png",

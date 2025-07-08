@@ -11,7 +11,12 @@ class Pickup {
     this.xPos = x;
     this.yPos = y;
     this.type = type; // 'fire-up', 'ice-up', 'life', 'repair', 'laz-up', 'scrap'
-    this.image = image;
+    // Use dark pickup image for 'dark' type
+    if (type === "dark" && typeof assetManager !== "undefined") {
+      this.image = assetManager.getImageForType("dark-pickup");
+    } else {
+      this.image = image;
+    }
     this.size = GAME_CONFIG.PICKUP_SIZE;
     this.speed = GAME_CONFIG.PICKUP_SPEED;
   }
@@ -40,7 +45,7 @@ class Pickup {
 
   static getPickupTypes({ includeLife = true } = {}) {
     let types = [];
-    types.push("fire-up", "ice-up", "laz-up", "scrap");
+    types.push("fire-up", "ice-up", "laz-up", "scrap", "dark");
     if (includeLife) types.push("life");
     types.push("repair", "shield", "speed");
     return types;
