@@ -770,3 +770,217 @@ class DarkMultiBullet {
     );
   }
 }
+
+class DarkPrimerObject {
+  constructor(x, y, angle, image, darkHoleImage, timer = 2000) {
+    this.xPos = x;
+    this.yPos = y;
+    this.angle = angle;
+    this.image = image;
+    this.size = GAME_CONFIG.BULLET_SIZE;
+    this.speed = GAME_CONFIG.DARK_BULLET_SPEED;
+    this.creationTime = millis();
+    this.timer = timer; // ms until transition
+    this.darkHoleImage = darkHoleImage;
+    this.hasTransformed = false;
+    this.shouldRemove = false;
+  }
+
+  move() {
+    this.xPos += Math.cos(this.angle - Math.PI / 2) * this.speed;
+    this.yPos += Math.sin(this.angle - Math.PI / 2) * this.speed;
+  }
+
+  draw() {
+    drawSprite(this.image, this.xPos, this.yPos, this.size);
+  }
+
+  update(gameManager) {
+    this.move();
+    this.draw();
+    if (!this.hasTransformed && millis() - this.creationTime >= this.timer) {
+      this.transformToDarkHole(gameManager);
+    }
+  }
+
+  transformToDarkHole(gameManager) {
+    this.hasTransformed = true;
+    // Add a new DarkHoleObject at this position
+    gameManager.spawnDarkHole(this.xPos, this.yPos, this.darkHoleImage);
+    // Mark for removal
+    this.shouldRemove = true;
+  }
+
+  isOffScreen() {
+    return (
+      this.xPos < -50 ||
+      this.xPos > width + 50 ||
+      this.yPos < -50 ||
+      this.yPos > height + 50
+    );
+  }
+}
+
+class DarkHoleObject {
+  constructor(
+    x,
+    y,
+    image,
+    pullRadius = 400, // Increased range
+    pullStrength = 0.8,
+    removeRadius = 30,
+    duration = 2500
+  ) {
+    this.xPos = x;
+    this.yPos = y;
+    this.image = image;
+    this.size = GAME_CONFIG.BULLET_SIZE * 2;
+    this.pullRadius = pullRadius;
+    this.pullStrength = pullStrength;
+    this.removeRadius = removeRadius;
+    this.shouldRemove = false;
+    this.creationTime = millis();
+    this.duration = duration;
+  }
+
+  draw() {
+    drawSprite(this.image, this.xPos, this.yPos, this.size);
+  }
+
+  update(gameManager) {
+    this.pullEntities(gameManager);
+    this.removeEntitiesAtCenter(gameManager);
+    this.draw();
+    if (millis() - this.creationTime >= this.duration) {
+      this.shouldRemove = true;
+    }
+  }
+
+  pullEntities(gameManager) {
+    // Pull all enemies
+    for (let enemy of gameManager.groupAlien) {
+      this.pullToCenter(enemy);
+    }
+    // Pull all bullets
+    for (let bullet of gameManager.groupEnemyBullet) {
+      this.pullToCenter(bullet);
+    }
+    for (let bullet of gameManager.groupBullet) {
+      this.pullToCenter(bullet);
+    }
+    for (let bullet of gameManager.groupIceBullet) {
+      this.pullToCenter(bullet);
+    }
+  }
+
+  pullToCenter(entity) {
+    if (!entity) return;
+    let centerX = this.xPos + this.size / 2;
+    let centerY = this.yPos + this.size / 2;
+    let entityX = entity.xPos + (entity.size ? entity.size / 2 : 0);
+    let entityY = entity.yPos + (entity.size ? entity.size / 2 : 0);
+    let dx = centerX - entityX;
+    let dy = centerY - entityY;
+    let dist = Math.sqrt(dx * dx + dy * dy);
+    // Detect if entity is a bullet (has move and directionX, directionY, speed, but not an enemy type)
+    const isBullet =
+      "move" in entity &&
+      "directionX" in entity &&
+      "directionY" in entity &&
+      "speed" in entity &&
+      !("type" in entity); // crude check: enemies have 'type', bullets don't
+
+    if (dist < this.pullRadius && dist > 1) {
+      if (isBullet) {
+        // Handle bullets: store original trajectory, then set direction toward center
+        if (!entity.wasPulledByDarkHole) {
+          if (entity._darkHoleOriginalDirectionX === undefined)
+            entity._darkHoleOriginalDirectionX = entity.directionX;
+          if (entity._darkHoleOriginalDirectionY === undefined)
+            entity._darkHoleOriginalDirectionY = entity.directionY;
+          if (entity._darkHoleOriginalSpeed === undefined)
+            entity._darkHoleOriginalSpeed = entity.speed;
+          entity.wasPulledByDarkHole = true;
+        }
+        // Set direction toward center (so bullet spirals in)
+        entity.directionX = dx / dist;
+        entity.directionY = dy / dist;
+        // Optionally, increase speed as it gets closer
+        entity.speed =
+          this.pullStrength * Math.pow(1 - dist / this.pullRadius, 2) * 8 +
+          (entity._darkHoleOriginalSpeed || 0);
+      } else {
+        // Non-bullets (enemies): store and zero direction
+        if (!entity.wasPulledByDarkHole) {
+          if (
+            "directionX" in entity &&
+            entity._darkHoleOriginalDirectionX === undefined
+          )
+            entity._darkHoleOriginalDirectionX = entity.directionX;
+          if (
+            "directionY" in entity &&
+            entity._darkHoleOriginalDirectionY === undefined
+          )
+            entity._darkHoleOriginalDirectionY = entity.directionY;
+          if ("speed" in entity && entity._darkHoleOriginalSpeed === undefined)
+            entity._darkHoleOriginalSpeed = entity.speed;
+          entity.wasPulledByDarkHole = true;
+        }
+        // Overwrite movement: force entity to move straight toward center
+        let pull =
+          this.pullStrength * Math.pow(1 - dist / this.pullRadius, 2) * 8;
+        let moveX = (dx / dist) * pull;
+        let moveY = (dy / dist) * pull;
+        entity.xPos += moveX;
+        entity.yPos += moveY;
+        if ("directionX" in entity) entity.directionX = 0;
+        if ("directionY" in entity) entity.directionY = 0;
+      }
+    } else if (entity.wasPulledByDarkHole) {
+      // Restore persistent original movement if it was stored, then clear flag
+      if (entity._darkHoleOriginalDirectionX !== undefined)
+        entity.directionX = entity._darkHoleOriginalDirectionX;
+      if (entity._darkHoleOriginalDirectionY !== undefined)
+        entity.directionY = entity._darkHoleOriginalDirectionY;
+      if (entity._darkHoleOriginalSpeed !== undefined)
+        entity.speed = entity._darkHoleOriginalSpeed;
+      entity.wasPulledByDarkHole = false;
+    }
+  }
+
+  removeEntitiesAtCenter(gameManager) {
+    // Remove enemies at center
+    for (let i = gameManager.groupAlien.length - 1; i >= 0; i--) {
+      let enemy = gameManager.groupAlien[i];
+      if (this.isAtCenter(enemy)) {
+        gameManager.groupAlien.splice(i, 1);
+      }
+    }
+    // Remove bullets at center
+    for (let groupName of [
+      "groupEnemyBullet",
+      "groupBullet",
+      "groupIceBullet",
+    ]) {
+      let group = gameManager[groupName];
+      for (let i = group.length - 1; i >= 0; i--) {
+        let bullet = group[i];
+        if (this.isAtCenter(bullet)) {
+          group.splice(i, 1);
+        }
+      }
+    }
+  }
+
+  isAtCenter(entity) {
+    if (!entity) return false;
+    let centerX = this.xPos + this.size / 2;
+    let centerY = this.yPos + this.size / 2;
+    let entityX = entity.xPos + (entity.size ? entity.size / 2 : 0);
+    let entityY = entity.yPos + (entity.size ? entity.size / 2 : 0);
+    let dx = centerX - entityX;
+    let dy = centerY - entityY;
+    let dist = Math.sqrt(dx * dx + dy * dy);
+    return dist < this.removeRadius;
+  }
+}

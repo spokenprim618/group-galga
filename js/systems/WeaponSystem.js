@@ -107,15 +107,16 @@ class WeaponSystem {
   }
 
   static fireDarkBullet() {
-    // Fire a special dark bullet from the player's position and rotation
+    // Fire a special dark primer object from the player's position and rotation
     let bulletSpawnPos = gameManager.player.getBulletSpawnPosition();
-    let bullet = new Bullet(
+    let primer = new DarkPrimerObject(
       bulletSpawnPos.x,
       bulletSpawnPos.y,
       gameManager.player.rotation,
-      assetManager.getImage("bullet") // Use a unique dark bullet image if desired
+      assetManager.getImage("darkBulletPrimer"),
+      assetManager.getImage("darkhole")
     );
-    gameManager.groupBullet.push(bullet);
-    console.log("Dark mode special bullet fired!");
+    gameManager.groupSpecialFire.push(primer);
+    console.log("Dark primer special bullet fired!");
   }
 }

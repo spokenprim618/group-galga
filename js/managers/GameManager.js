@@ -6,6 +6,8 @@ class GameManager {
     this.groupPickup = [];
     this.groupIceBullet = [];
     this.groupBlackBullet = [];
+    this.groupStageObjects = [];
+    this.groupSpecialFire = [];
     this.player = null;
     // Black hole feature state
     this.holePickupCollected = false;
@@ -423,6 +425,7 @@ class GameManager {
         } else if (
           !(this.groupBullet[i] instanceof SawBladeBullet) &&
           this.groupBullet[i] &&
+          typeof this.groupBullet[i].checkCollision === "function" &&
           this.groupBullet[i].checkCollision(this.groupAlien[j])
         ) {
           // Check if enemy is invulnerable
@@ -796,6 +799,33 @@ class GameManager {
       ) {
         enemy.isInvulnerable = false;
         enemy.shieldedBy = null;
+      }
+    }
+  }
+
+  spawnDarkHole(x, y, image) {
+    // Add a new DarkHoleObject to the stage objects group
+    this.groupStageObjects.push(new DarkHoleObject(x, y, image));
+  }
+
+  updateStageObjects() {
+    // Update and draw all stage objects (e.g., dark holes)
+    for (let i = this.groupStageObjects.length - 1; i >= 0; i--) {
+      let obj = this.groupStageObjects[i];
+      obj.update(this);
+      // Optionally remove objects if they have a shouldRemove flag
+      if (obj.shouldRemove) {
+        this.groupStageObjects.splice(i, 1);
+      }
+    }
+  }
+
+  updateSpecialFireObjects() {
+    for (let i = this.groupSpecialFire.length - 1; i >= 0; i--) {
+      let obj = this.groupSpecialFire[i];
+      obj.update(this);
+      if (obj.shouldRemove) {
+        this.groupSpecialFire.splice(i, 1);
       }
     }
   }

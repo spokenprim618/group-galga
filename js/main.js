@@ -97,6 +97,12 @@ function updateGame() {
   gameManager.updateEnemyBullets();
   gameManager.updateIceBullets();
 
+  // Update special fire objects (e.g., dark primer)
+  gameManager.updateSpecialFireObjects();
+
+  // Update stage objects (e.g., dark holes)
+  gameManager.updateStageObjects();
+
   // Handle player shooting (mouse-based)
   WeaponSystem.handlePlayerShooting();
 

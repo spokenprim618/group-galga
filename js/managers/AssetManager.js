@@ -68,6 +68,8 @@ class AssetManager {
       this.images.darkBullet = loadImage(IMAGE_PATHS.DARK_BULLET);
       this.images.darkLaser = loadImage(IMAGE_PATHS.DARK_LASER);
       this.images.darkBeamBullet = loadImage(IMAGE_PATHS.DARK_BEAM_BULLET);
+      this.images.darkBulletPrimer = loadImage(IMAGE_PATHS.DARK_BULLET_PRIMER);
+      this.images.darkhole = loadImage(IMAGE_PATHS.DARK_HOLE);
 
       // New enemies
       this.images.dark1Beam = loadImage(IMAGE_PATHS.DARK1_BEAM);

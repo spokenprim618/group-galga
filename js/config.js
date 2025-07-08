@@ -219,6 +219,8 @@ const IMAGE_PATHS = {
 
   // New player bullet images
   // Remove BLACK_BULLET from IMAGE_PATHS if only used for player black bullet features.
+  DARK_BULLET_PRIMER: "images/bullets/player-bullets/dark_ball-primer.png",
+  DARK_HOLE: "images/bullets/player-bullets/darkhole.png",
 
   // New enemy bullet images
   DARK_CONNECTOR: "images/bullets/enemy-bullets/dark/dark-connector.png",
