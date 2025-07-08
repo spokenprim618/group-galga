@@ -61,6 +61,7 @@ const GAME_CONFIG = {
   ANGEL_MODE_DURATION: 10000, // 10 seconds
   SCRAP_MODE_DURATION: 30000, // 30 seconds
   SPEED_MODE_DURATION: 20000, // 20 seconds
+  DARK_MODE_DURATION: 30000, // 30 seconds
 
   // Flame thrower settings
   FLAME_DURATION: 2000, // 2 seconds
@@ -127,7 +128,7 @@ const GAME_CONFIG = {
 //
 // Only one main mode can be active at a time. Status pickups are always allowed.
 
-const MODES_WITH_SPECIAL_FIRING_MODE = ["fire", "ice"];
+const MODES_WITH_SPECIAL_FIRING_MODE = ["fire", "ice", "dark"];
 const MODES_WITH_BULLET_OVERRIDE = ["scrap", "laz", "angel"];
 const MODES_WITH_NO_SPECIAL_FIRING_MODE = [];
 

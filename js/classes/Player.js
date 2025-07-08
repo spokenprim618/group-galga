@@ -75,6 +75,40 @@ class Player {
   takeDamage(damage) {
     console.log("Player taking damage:", damage);
   }
+
+  setResistancesForPowerup(type) {
+    // Reset all resistances
+    this.resistances.setResistance("fire", 0);
+    this.resistances.setResistance("ice", 0);
+    this.resistances.setResistance("toxic", 0);
+    this.resistances.setResistance("dark", 0);
+    switch (type) {
+      case "fire-up":
+        this.resistances.setResistance("fire", 0.8);
+        break;
+      case "ice-up":
+        this.resistances.setResistance("ice", 0.8);
+        break;
+      case "dark":
+        this.resistances.setResistance("dark", 0.8);
+        break;
+      case "laz-up":
+      case "scrap":
+        this.resistances.setResistance("fire", 0.3);
+        this.resistances.setResistance("ice", 0.3);
+        this.resistances.setResistance("toxic", 0.3);
+        this.resistances.setResistance("dark", 0.3);
+        break;
+      case "angel":
+        this.resistances.setResistance("fire", 0.9);
+        this.resistances.setResistance("ice", 0.9);
+        this.resistances.setResistance("toxic", 0.9);
+        this.resistances.setResistance("dark", 0.9);
+        break;
+      default:
+        break;
+    }
+  }
 }
 
 function drawSprite(img, x, y, size, rotation = 0) {

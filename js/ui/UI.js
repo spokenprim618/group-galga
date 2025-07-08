@@ -241,6 +241,18 @@ class UI {
       }
       yOffset += 40;
     }
+
+    // Display dark mode status
+    if (gameState.isDarkMode) {
+      let remainingTime = gameState.getPowerupRemainingTime("dark");
+      if (remainingTime > 0) {
+        text("DARK MODE: " + remainingTime + "s", 950, yOffset);
+        fill(50, 50, 50);
+        text("Dark mode active", 950, yOffset + 20);
+        fill(255, 255, 255);
+      }
+      yOffset += 40;
+    }
   }
 
   static drawBetweenRounds() {

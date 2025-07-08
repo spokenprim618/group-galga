@@ -645,6 +645,10 @@ class GameManager {
   }
 
   updatePlayerImage() {
+    if (gameState.isDarkMode) {
+      this.player.image = assetManager.getImageForType("dark-player");
+      return;
+    }
     if (gameState.isFireMode) {
       this.player.image = assetManager.getImageForType("fire2");
     } else if (gameState.isIceMode) {

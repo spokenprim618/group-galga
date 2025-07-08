@@ -157,6 +157,7 @@ function keyPressed() {
     gameState.activatePowerup("repair");
     console.log("Test: Repair activated");
   }
+  // Test key for dark mode
   if (key === "9") {
     gameState.activatePowerup("dark");
     console.log("Test: Dark mode activated");
@@ -182,15 +183,9 @@ function keyPressed() {
       WeaponSystem.fireIceBullet();
     }
 
-    // Fire black bullet with Q
-    if (key === "Q" || key === "q") {
-      // Calculate bullet spawn position at ship's nose
-      let bulletSpawnPos = gameManager.player.getBulletSpawnPosition();
-      gameManager.fireBlackBullet(
-        bulletSpawnPos.x,
-        bulletSpawnPos.y,
-        gameManager.player.rotation
-      );
+    // Special fire for dark mode with Q
+    if ((key === "Q" || key === "q") && gameState.isDarkMode) {
+      WeaponSystem.fireDarkBullet();
     }
   }
 

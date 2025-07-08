@@ -105,4 +105,17 @@ class WeaponSystem {
       console.log("Ice bullets only work in ice mode!");
     }
   }
+
+  static fireDarkBullet() {
+    // Fire a special dark bullet from the player's position and rotation
+    let bulletSpawnPos = gameManager.player.getBulletSpawnPosition();
+    let bullet = new Bullet(
+      bulletSpawnPos.x,
+      bulletSpawnPos.y,
+      gameManager.player.rotation,
+      assetManager.getImage("bullet") // Use a unique dark bullet image if desired
+    );
+    gameManager.groupBullet.push(bullet);
+    console.log("Dark mode special bullet fired!");
+  }
 }

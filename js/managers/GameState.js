@@ -28,6 +28,8 @@ class GameState {
     this.isSpeedMode = false;
     this.speedModeStartTime = 0;
     this.isAnyModeActive = false; // True if any main mode is active
+    this.isDarkMode = false;
+    this.darkModeStartTime = 0;
 
     // Flame thrower state
     this.isFiring = false;
@@ -69,6 +71,8 @@ class GameState {
     this.isSpeedMode = false;
     this.speedModeStartTime = 0;
     this.isAnyModeActive = false;
+    this.isDarkMode = false;
+    this.darkModeStartTime = 0;
 
     // Reset flame state
     this.isFiring = false;
@@ -109,6 +113,8 @@ class GameState {
     this.isSpeedMode = false;
     this.speedModeStartTime = 0;
     this.isAnyModeActive = false;
+    this.isDarkMode = false;
+    this.darkModeStartTime = 0;
 
     // Reset flame state
     this.isFiring = false;
@@ -182,6 +188,10 @@ class GameState {
           this.shields++;
         }
         break;
+      case "dark":
+        this.isDarkMode = true;
+        this.darkModeStartTime = millis();
+        break;
     }
     if (typeof gameManager !== "undefined" && gameManager.player) {
       // Remove setResistancesForPowerup for 'hole' or 'dark'
@@ -201,6 +211,8 @@ class GameState {
     this.isSpeedMode = false;
     this.speedModeStartTime = 0;
     this.isAnyModeActive = false;
+    this.isDarkMode = false;
+    this.darkModeStartTime = 0;
   }
 
   checkPowerupExpiration() {
@@ -259,6 +271,15 @@ class GameState {
       this.isSpeedMode = false;
       this.speedModeStartTime = 0;
     }
+
+    // Check dark mode expiration
+    if (
+      this.isDarkMode &&
+      currentTime - this.darkModeStartTime >= GAME_CONFIG.DARK_MODE_DURATION
+    ) {
+      this.isDarkMode = false;
+      this.darkModeStartTime = 0;
+    }
   }
 
   getPowerupRemainingTime(powerupType) {
@@ -312,6 +333,14 @@ class GameState {
                 1000
             )
           : 0;
+      case "dark":
+        return this.isDarkMode
+          ? Math.ceil(
+              (GAME_CONFIG.DARK_MODE_DURATION -
+                (currentTime - this.darkModeStartTime)) /
+                1000
+            )
+          : 0;
       default:
         return 0;
     }
@@ -349,6 +378,7 @@ class GameState {
           if (this.isAngelMode) this.angelModeStartTime += pauseDuration;
           if (this.isScrapMode) this.scrapModeStartTime += pauseDuration;
           if (this.isSpeedMode) this.speedModeStartTime += pauseDuration;
+          if (this.isDarkMode) this.darkModeStartTime += pauseDuration;
           this.betweenRoundsPowerupPauseStart = null;
         }
         return true;
