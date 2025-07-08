@@ -96,7 +96,7 @@ class WeaponSystem {
         bulletSpawnPos.x,
         bulletSpawnPos.y,
         gameManager.player.rotation,
-        assetManager.getImage("iceExplo")
+        assetManager.getImage("iceBullet")
       );
       gameManager.groupIceBullet.push(iceBullet);
       console.log("Ice bullet fired!");

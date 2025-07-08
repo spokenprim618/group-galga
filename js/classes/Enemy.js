@@ -1,3 +1,11 @@
+function drawSprite(img, x, y, size, rotation = 0) {
+  push();
+  translate(x + size / 2, y + size / 2);
+  if (rotation) rotate(rotation);
+  image(img, -size / 2, -size / 2, size, size);
+  pop();
+}
+
 class Alien {
   constructor(x, y, image) {
     this.xPos = x;
@@ -48,7 +56,7 @@ class Alien {
 
   draw() {
     // Draw the enemy
-    image(this.image, this.xPos, this.yPos, this.size, this.size);
+    drawSprite(this.image, this.xPos, this.yPos, this.size);
 
     // Draw invulnerability indicator
     if (this.isInvulnerable) {
@@ -320,7 +328,7 @@ class IceBeamEnemy extends Alien {
 
   draw() {
     // Draw the enemy
-    image(this.image, this.xPos, this.yPos, this.size, this.size);
+    drawSprite(this.image, this.xPos, this.yPos, this.size);
 
     // Draw the beam if active
     if (this.beamActive) {
@@ -340,12 +348,10 @@ class IceBeamEnemy extends Alien {
 
     try {
       if (beamImage && beamImage.width) {
-        // Use the beam image
+        // Use the beam image, stretched to the correct length and width
         push();
         translate(beamStartX, beamStartY);
         rotate(this.beamAngle + HALF_PI);
-
-        // Draw the beam image stretched to the desired dimensions
         imageMode(CENTER);
         image(
           beamImage,
@@ -515,25 +521,33 @@ class ToxicGas extends Alien {
   constructor(x, y) {
     super(x, y, assetManager.getImage("toxicGas"));
     this.type = "toxicGas";
+    this.lastShotTime = 0;
+    this.shootCooldown = 2000; // 2 seconds cooldown
   }
 
   shouldShoot() {
-    return random() < GAME_CONFIG.TOXIC_GAS_SHOOT_CHANCE;
+    let now = millis();
+    if (now - this.lastShotTime < this.shootCooldown) return false;
+    if (random() < GAME_CONFIG.TOXIC_GAS_SHOOT_CHANCE) {
+      this.lastShotTime = now;
+      return true;
+    }
+    return false;
   }
 
   createBullet() {
     let center = this.getCenter();
-    let targetX = gameManager.player
-      ? gameManager.player.xPos + gameManager.player.size / 2
-      : center.x;
-    let targetY = gameManager.player
-      ? gameManager.player.yPos + gameManager.player.size / 2
-      : center.y;
+    let playerCenter = gameManager.player
+      ? {
+          x: gameManager.player.xPos + gameManager.player.size / 2,
+          y: gameManager.player.yPos + gameManager.player.size / 2,
+        }
+      : center;
+    let angle = atan2(playerCenter.y - center.y, playerCenter.x - center.x);
     return new ToxicGasBullet(
       center.x,
       center.y,
-      targetX,
-      targetY,
+      angle,
       assetManager.getImage("toxicCan"),
       assetManager.getImage("toxicExplo")
     );
@@ -681,7 +695,7 @@ class DarkBeamEnemy extends Alien {
 
   draw() {
     // Draw the enemy
-    image(this.image, this.xPos, this.yPos, this.size, this.size);
+    drawSprite(this.image, this.xPos, this.yPos, this.size);
 
     // Draw the beam if active
     if (this.beamActive) {
@@ -702,20 +716,13 @@ class DarkBeamEnemy extends Alien {
     try {
       if (beamImage && beamImage.width) {
         // Use the beam image
-        push();
-        translate(beamStartX, beamStartY);
-        rotate(this.beamAngle + HALF_PI);
-
-        // Draw the beam image stretched to the desired dimensions
-        imageMode(CENTER);
-        image(
+        drawSprite(
           beamImage,
-          0,
-          0,
+          beamStartX,
+          beamStartY,
           GAME_CONFIG.DARK_BEAM_WIDTH,
-          GAME_CONFIG.DARK_BEAM_LENGTH
+          this.beamAngle + HALF_PI
         );
-        pop();
       } else {
         // Fallback to line drawing if image not loaded
         stroke(100, 0, 150, 150); // Purple beam with transparency
@@ -899,7 +906,7 @@ class DarkShieldEnemy extends Alien {
 
   draw() {
     // Draw the shield enemy
-    image(this.image, this.xPos, this.yPos, this.size, this.size);
+    drawSprite(this.image, this.xPos, this.yPos, this.size);
 
     // Connectors are now drawn centrally in GameManager.drawAllDarkShieldConnectors()
   }

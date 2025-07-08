@@ -63,6 +63,14 @@ let isBetweenRounds = false;
 let betweenRoundsStartTime = 0;
 let betweenRoundsDuration = 3000; // 3 seconds in milliseconds
 
+function drawSprite(img, x, y, size, rotation = 0) {
+  push();
+  translate(x + size / 2, y + size / 2);
+  if (rotation) rotate(rotation);
+  image(img, -size / 2, -size / 2, size, size);
+  pop();
+}
+
 function preload() {
   playerImage = loadImage("images/player/player.png");
   enemyImage = loadImage("images/enemies/enemy.png");
@@ -104,22 +112,13 @@ class Bullet {
   }
 
   draw() {
-    push();
-    translate(this.xPos + this.size / 2, this.yPos + this.size / 2);
-    rotate(atan2(this.directionY, this.directionX) + PI / 2);
-    // Shift lazBulletImage 40px to the left for better alignment
-    if (this.image === lazBulletImage || this.image === bulletImage) {
-      image(
-        this.image,
-        -this.size / 2 - 30,
-        -this.size / 2,
-        this.size,
-        this.size
-      );
-    } else {
-      image(this.image, -this.size / 2, -this.size / 2, this.size, this.size);
-    }
-    pop();
+    drawSprite(
+      this.image,
+      this.xPos + this.size / 2,
+      this.yPos + this.size / 2,
+      this.size,
+      atan2(this.directionY, this.directionX) + PI / 2
+    );
   }
 
   isOffScreen() {
@@ -169,23 +168,22 @@ class IceBullet {
 
   draw() {
     if (!this.hasExploded) {
-      push();
-      translate(this.xPos + this.size / 2, this.yPos + this.size / 2);
-      rotate(atan2(this.directionY, this.directionX) + PI / 2);
-      image(this.image, -this.size / 2, -this.size / 2, this.size, this.size);
-      pop();
+      drawSprite(
+        this.image,
+        this.xPos + this.size / 2,
+        this.yPos + this.size / 2,
+        this.size,
+        atan2(this.directionY, this.directionX) + PI / 2
+      );
     } else {
       // Draw explosion centered on the original bullet position
-      push();
-      translate(this.xPos + this.size / 2, this.yPos + this.size / 2);
-      image(
+      drawSprite(
         this.image,
-        -this.explosionSize / 2,
-        -this.explosionSize / 2,
+        this.xPos + this.size / 2,
+        this.yPos + this.size / 2,
         this.explosionSize,
-        this.explosionSize
+        0
       );
-      pop();
     }
   }
 
@@ -252,11 +250,13 @@ class Player {
   }
 
   draw() {
-    push(); // Save the current transformation state
-    translate(this.xPos + this.size / 2, this.yPos + this.size / 2); // Move to center of player
-    rotate(this.rotation); // Rotate
-    image(this.image, -this.size / 2, -this.size / 2, this.size, this.size); // Draw centered
-    pop(); // Restore the previous transformation state
+    drawSprite(
+      this.image,
+      this.xPos + this.size / 2,
+      this.yPos + this.size / 2,
+      this.size,
+      this.rotation
+    );
   }
 
   getNosePosition() {
@@ -377,7 +377,7 @@ class Pickup {
   }
 
   draw() {
-    image(this.image, this.xPos, this.yPos, this.size, this.size);
+    drawSprite(this.image, this.xPos, this.yPos, this.size);
   }
 
   isOffScreen() {
@@ -410,11 +410,13 @@ class SawBladeBullet extends Bullet {
 
   // Override draw if you want a different look (optional)
   draw() {
-    push();
-    translate(this.xPos + this.size / 2, this.yPos + this.size / 2);
-    rotate(atan2(this.directionY, this.directionX) + PI / 2);
-    image(this.image, -this.size / 2, -this.size / 2, this.size, this.size);
-    pop();
+    drawSprite(
+      this.image,
+      this.xPos + this.size / 2,
+      this.yPos + this.size / 2,
+      this.size,
+      atan2(this.directionY, this.directionX) + PI / 2
+    );
   }
 
   // Override collision with alien: bounce instead of remove
@@ -572,7 +574,13 @@ function applyPickupEffect(type) {
       laserModeStartTime = 0;
       isScrapMode = false;
       scrapModeStartTime = 0;
-      player.image = fire2Image;
+      drawSprite(
+        fire2Image,
+        player.xPos + player.size / 2,
+        player.yPos + player.size / 2,
+        player.size,
+        player.rotation
+      );
       isFireMode = true;
       fireModeStartTime = millis();
       break;
@@ -583,7 +591,13 @@ function applyPickupEffect(type) {
       laserModeStartTime = 0;
       isScrapMode = false;
       scrapModeStartTime = 0;
-      player.image = ice2Image;
+      drawSprite(
+        ice2Image,
+        player.xPos + player.size / 2,
+        player.yPos + player.size / 2,
+        player.size,
+        player.rotation
+      );
       isIceMode = true;
       iceModeStartTime = millis();
       break;
@@ -594,7 +608,13 @@ function applyPickupEffect(type) {
       iceModeStartTime = 0;
       isScrapMode = false;
       scrapModeStartTime = 0;
-      player.image = playerImage;
+      drawSprite(
+        playerImage,
+        player.xPos + player.size / 2,
+        player.yPos + player.size / 2,
+        player.size,
+        player.rotation
+      );
       isLaserMode = true;
       laserModeStartTime = millis();
       break;
@@ -605,7 +625,13 @@ function applyPickupEffect(type) {
       iceModeStartTime = 0;
       isLaserMode = false;
       laserModeStartTime = 0;
-      player.image = scrapShipImage;
+      drawSprite(
+        scrapShipImage,
+        player.xPos + player.size / 2,
+        player.yPos + player.size / 2,
+        player.size,
+        player.rotation
+      );
       isScrapMode = true;
       scrapModeStartTime = millis();
       break;
@@ -647,54 +673,18 @@ function draw() {
     let startX = width / 2 - 5.5 * spriteSize;
 
     // Draw all available images in a row
-    image(angelImage, startX + 0 * spriteSize, spriteY, spriteSize, spriteSize);
-    image(
-      fireUpImage,
-      startX + 1 * spriteSize,
-      spriteY,
-      spriteSize,
-      spriteSize
-    );
-    image(fire2Image, startX + 2 * spriteSize, spriteY, spriteSize, spriteSize);
-    image(iceUpImage, startX + 3 * spriteSize, spriteY, spriteSize, spriteSize);
-    image(ice2Image, startX + 4 * spriteSize, spriteY, spriteSize, spriteSize);
-    image(
-      player1Image,
-      startX + 5 * spriteSize,
-      spriteY,
-      spriteSize,
-      spriteSize
-    );
-    image(
-      repairImage,
-      startX + 6 * spriteSize,
-      spriteY,
-      spriteSize,
-      spriteSize
-    );
-    image(lifeImage, startX + 7 * spriteSize, spriteY, spriteSize, spriteSize);
-    image(
-      playerImage,
-      startX + 8 * spriteSize,
-      spriteY,
-      spriteSize,
-      spriteSize
-    );
-    image(enemyImage, startX + 9 * spriteSize, spriteY, spriteSize, spriteSize);
-    image(
-      bulletImage,
-      startX + 10 * spriteSize,
-      spriteY,
-      spriteSize,
-      spriteSize
-    );
-    image(
-      enemyBulletImage,
-      startX + 11 * spriteSize,
-      spriteY,
-      spriteSize,
-      spriteSize
-    );
+    drawSprite(angelImage, startX + 0 * spriteSize, spriteY, spriteSize);
+    drawSprite(fireUpImage, startX + 1 * spriteSize, spriteY, spriteSize);
+    drawSprite(fire2Image, startX + 2 * spriteSize, spriteY, spriteSize);
+    drawSprite(iceUpImage, startX + 3 * spriteSize, spriteY, spriteSize);
+    drawSprite(ice2Image, startX + 4 * spriteSize, spriteY, spriteSize);
+    drawSprite(player1Image, startX + 5 * spriteSize, spriteY, spriteSize);
+    drawSprite(repairImage, startX + 6 * spriteSize, spriteY, spriteSize);
+    drawSprite(lifeImage, startX + 7 * spriteSize, spriteY, spriteSize);
+    drawSprite(playerImage, startX + 8 * spriteSize, spriteY, spriteSize);
+    drawSprite(enemyImage, startX + 9 * spriteSize, spriteY, spriteSize);
+    drawSprite(bulletImage, startX + 10 * spriteSize, spriteY, spriteSize);
+    drawSprite(enemyBulletImage, startX + 11 * spriteSize, spriteY, spriteSize);
 
     // Draw the player with fixed rotation
     if (player) {
@@ -767,7 +757,7 @@ function draw() {
     // Display life pickup if held
     if (lifePickupHeld > 0) {
       text("Life Pickup: " + lifePickupHeld, 950, 40);
-      image(lifeImage, 850, 30, 30, 30);
+      drawSprite(lifeImage, 850, 30, 30);
     }
 
     // Display fire mode status
@@ -776,7 +766,13 @@ function draw() {
       let currentTime = millis();
       if (currentTime - fireModeStartTime >= fireModeDuration) {
         isFireMode = false;
-        player.image = playerImage; // Reset to normal player image
+        drawSprite(
+          playerImage,
+          player.xPos + player.size / 2,
+          player.yPos + player.size / 2,
+          player.size,
+          player.rotation
+        );
         console.log("Fire mode expired!");
       } else {
         // Calculate remaining time
@@ -796,7 +792,13 @@ function draw() {
       let currentTime = millis();
       if (currentTime - iceModeStartTime >= iceModeDuration) {
         isIceMode = false;
-        player.image = playerImage; // Reset to normal player image
+        drawSprite(
+          playerImage,
+          player.xPos + player.size / 2,
+          player.yPos + player.size / 2,
+          player.size,
+          player.rotation
+        );
         console.log("Ice mode expired!");
       } else {
         // Calculate remaining time
@@ -816,7 +818,13 @@ function draw() {
       let currentTime = millis();
       if (currentTime - laserModeStartTime >= laserModeDuration) {
         isLaserMode = false;
-        player.image = player1Image; // Reset to default ship
+        drawSprite(
+          player1Image,
+          player.xPos + player.size / 2,
+          player.yPos + player.size / 2,
+          player.size,
+          player.rotation
+        );
         console.log("Laser mode expired!");
       } else {
         // Calculate remaining time
@@ -835,7 +843,13 @@ function draw() {
       let currentTime = millis();
       if (currentTime - angelModeStartTime >= angelModeDuration) {
         isAngelMode = false;
-        player.image = player1Image; // Reset to default ship
+        drawSprite(
+          player1Image,
+          player.xPos + player.size / 2,
+          player.yPos + player.size / 2,
+          player.size,
+          player.rotation
+        );
         console.log("Angel mode expired!");
       } else {
         let remainingTime = Math.ceil(
@@ -853,7 +867,13 @@ function draw() {
       let currentTime = millis();
       if (currentTime - scrapModeStartTime >= scrapModeDuration) {
         isScrapMode = false;
-        player.image = player1Image; // Reset to default ship
+        drawSprite(
+          player1Image,
+          player.xPos + player.size / 2,
+          player.yPos + player.size / 2,
+          player.size,
+          player.rotation
+        );
         console.log("Scrap mode expired!");
       } else {
         let remainingTime = Math.ceil(
@@ -875,11 +895,10 @@ function draw() {
     for (let i = 0; i < groupAlien.length; i++) {
       if (!groupAlien[i]) continue;
 
-      image(
+      drawSprite(
         groupAlien[i].image,
         groupAlien[i].xPos,
         groupAlien[i].yPos,
-        50,
         50
       );
       groupAlien[i].move();
@@ -909,112 +928,32 @@ function draw() {
         groupAlien[i].yPos = 0;
         lives -= 1;
         if (lives <= 0) {
-          // Check if player has a life pickup to auto-restore
-          if (lifePickupHeld > 0) {
-            lives = 3; // Restore to full health
-            lifePickupHeld = 0; // Use the life pickup
-            // Activate angel mode
-            isAngelMode = true;
-            angelModeStartTime = millis();
-            player.image = angelImage;
-            // Prevent immediate game over by skipping the rest of this block
-            continue;
-          } else {
-            // Clear all bullets when game ends
-            groupBullet = [];
-            groupEnemyBullet = [];
-            groupIceBullet = [];
-            // End all powerup modes
-            isFireMode = false;
-            fireModeStartTime = 0;
-            isIceMode = false;
-            iceModeStartTime = 0;
-            isLaserMode = false;
-            laserModeStartTime = 0;
-            isAngelMode = false;
-            angelModeStartTime = 0;
-            state = 3; // Game over
-          }
+          gameManager.handleGameOver();
+          return;
         }
       }
     }
 
-    // Handle player shooting
-    if (mouseIsPressed && mouseButton === LEFT) {
-      let currentTime = millis();
-      if (currentTime - lastShotTime >= shootCooldown) {
-        let bulletSpawnX =
-          player.xPos + player.size / 2 + 25 * cos(player.rotation);
-        let bulletSpawnY =
-          player.yPos + player.size / 2 + 25 * sin(player.rotation);
-        if (isAngelMode) {
-          // Fire 13 laz bullets evenly in 360 degrees
-          let numBullets = 13;
-          let baseAngle = player.rotation;
-          for (let i = 0; i < numBullets; i++) {
-            let angle = baseAngle + radians((360 / numBullets) * i);
-            let angelBullet = new Bullet(
-              bulletSpawnX,
-              bulletSpawnY,
-              angle,
-              lazBulletImage
-            );
-            groupBullet.push(angelBullet);
-          }
-        } else if (isScrapMode) {
-          let sawBullet = new SawBladeBullet(
-            bulletSpawnX,
-            bulletSpawnY,
-            player.rotation,
-            sawBladeImage
-          );
-          groupBullet.push(sawBullet);
-        } else if (isLaserMode) {
-          // Center bullet
-          let baseAngle = player.rotation;
-          // Main laser
-          let mainBullet = new Bullet(
-            bulletSpawnX,
-            bulletSpawnY,
-            baseAngle,
-            lazBulletImage
-          );
-          groupBullet.push(mainBullet);
-          // Left laser (-30 degrees)
-          let leftAngle = baseAngle - radians(30);
-          let leftBullet = new Bullet(
-            bulletSpawnX,
-            bulletSpawnY,
-            leftAngle,
-            lazBulletImage
-          );
-          groupBullet.push(leftBullet);
-          // Right laser (+30 degrees)
-          let rightAngle = baseAngle + radians(30);
-          let rightBullet = new Bullet(
-            bulletSpawnX,
-            bulletSpawnY,
-            rightAngle,
-            lazBulletImage
-          );
-          groupBullet.push(rightBullet);
-        } else {
-          let bulletImg = bulletImage;
-          bullet = new Bullet(
-            bulletSpawnX, // Use calculated spawn position
-            bulletSpawnY, // Use calculated spawn position
-            player.rotation, // Use player's rotation angle
-            bulletImg
-          );
-          groupBullet.push(bullet);
-        }
-        lastShotTime = currentTime;
-      }
+    // Cap bullet arrays to prevent runaway growth
+    if (groupBullet.length > 100) {
+      groupBullet.splice(0, groupBullet.length - 100);
+      console.warn("groupBullet capped at 100");
+    }
+    if (groupEnemyBullet.length > 100) {
+      groupEnemyBullet.splice(0, groupEnemyBullet.length - 100);
+      console.warn("groupEnemyBullet capped at 100");
+    }
+    if (groupBullet.length > 80 || groupEnemyBullet.length > 80) {
+      console.log(
+        "Bullet counts:",
+        groupBullet.length,
+        groupEnemyBullet.length
+      );
     }
 
     // Update and draw bullets
     for (let i = groupBullet.length - 1; i >= 0; i--) {
-      if (!groupBullet[i]) {
+      if (!groupBullet[i] || groupBullet[i].isOffScreen()) {
         groupBullet.splice(i, 1);
         continue;
       }
@@ -1023,6 +962,7 @@ function draw() {
       groupBullet[i].draw();
 
       // Check for collisions with aliens
+      let bulletRemoved = false;
       for (let j = groupAlien.length - 1; j >= 0; j--) {
         if (!groupAlien[j]) continue;
 
@@ -1030,9 +970,7 @@ function draw() {
           groupBullet[i] instanceof SawBladeBullet &&
           groupBullet[i].checkCollision(groupAlien[j])
         ) {
-          // Spawn pickup at enemy location before removing it
           spawnPickup(groupAlien[j].xPos, groupAlien[j].yPos);
-          // Remove the alien only (not the saw blade)
           groupAlien.splice(j, 1);
           score += 100;
           // Saw blade bounces, do not remove
@@ -1041,15 +979,15 @@ function draw() {
           groupBullet[i] &&
           groupBullet[i].checkCollision(groupAlien[j])
         ) {
-          // Spawn pickup at enemy location before removing it
           spawnPickup(groupAlien[j].xPos, groupAlien[j].yPos);
-          // Remove both the bullet and the alien
           groupBullet.splice(i, 1);
           groupAlien.splice(j, 1);
           score += 100;
+          bulletRemoved = true;
           break;
         }
       }
+      if (bulletRemoved) continue;
 
       // Remove bullets that are off screen or (for saws) too many bounces
       if (
@@ -1111,9 +1049,9 @@ function draw() {
           rotate(player.rotation);
 
           if (flameConeGraphic && flameImage && flameImage.width) {
-            image(flameConeGraphic, -player.size - 9, -player.size * 2.5);
+            drawSprite(flameConeGraphic, -player.size - 9, -player.size * 2.5);
           } else if (flameConeFallbackGraphic) {
-            image(
+            drawSprite(
               flameConeFallbackGraphic,
               -player.size - 9,
               -player.size * 2.5
@@ -1212,11 +1150,10 @@ function draw() {
 
     try {
       groupEnemyBullet[i].move();
-      image(
+      drawSprite(
         groupEnemyBullet[i].image,
         groupEnemyBullet[i].xPos,
         groupEnemyBullet[i].yPos,
-        50,
         50
       );
 
@@ -1230,34 +1167,7 @@ function draw() {
         groupEnemyBullet.splice(i, 1);
         console.log("Player hit! Lives remaining:", lives);
         if (lives <= 0) {
-          // Check if player has a life pickup to auto-restore
-          if (lifePickupHeld > 0) {
-            lives = 3; // Restore to full health
-            lifePickupHeld = 0; // Use the life pickup
-            // Activate angel mode
-            isAngelMode = true;
-            angelModeStartTime = millis();
-            player.image = angelImage;
-            // Prevent immediate game over by skipping the rest of this block
-            continue;
-          } else {
-            // Clear all bullets when game ends
-            groupBullet = [];
-            groupEnemyBullet = [];
-            groupIceBullet = [];
-            // End all powerup modes
-            isFireMode = false;
-            fireModeStartTime = 0;
-            isIceMode = false;
-            iceModeStartTime = 0;
-            isLaserMode = false;
-            laserModeStartTime = 0;
-            isAngelMode = false;
-            angelModeStartTime = 0;
-            isScrapMode = false;
-            scrapModeStartTime = 0;
-            state = 3; // Game over
-          }
+          gameManager.handleGameOver();
         }
         continue;
       }
@@ -1275,16 +1185,16 @@ function draw() {
       groupEnemyBullet.splice(i, 1);
     }
   }
+
+  // In main draw loop, call updateAllPowerups() once per frame
+  updateAllPowerups();
 }
 
 function mouseClicked() {
   //back to game
   if (
     state == 3 &&
-    mouseX > width / 2 - 100 &&
-    mouseX < width / 2 + 100 &&
-    mouseY > height / 2 + 80 &&
-    mouseY < height / 2 + 130
+    UI.isButtonClicked(width / 2 - 100, height / 2 + 80, 200, 50)
   ) {
     background(0);
     state = 1;
@@ -1307,13 +1217,7 @@ function mouseClicked() {
     spawnAliens();
   }
 
-  if (
-    state == 3 &&
-    mouseX > 200 &&
-    mouseX < 300 &&
-    mouseY > 400 &&
-    mouseY < 500
-  ) {
+  if (state == 3 && UI.isButtonClicked(200, 400, 100, 100)) {
     background(0);
     state = 0;
     currentRound = 1;
@@ -1334,13 +1238,7 @@ function mouseClicked() {
   }
 
   //click START button to begin game
-  if (
-    state == 0 &&
-    mouseX >= width / 2 - 50 &&
-    mouseX <= width / 2 + 50 &&
-    mouseY >= 190 &&
-    mouseY <= 240
-  ) {
+  if (state == 0 && UI.isButtonClicked(width / 2 - 50, 190, 100, 50)) {
     background(0);
     lives = 3;
     currentRound = 1;
@@ -1363,59 +1261,53 @@ function mouseClicked() {
   }
 }
 
-function resetGame() {
-  // Clear all bullets
+function resetGameState({ toMenu }) {
   groupBullet = [];
-  // Clear all enemy bullets
   groupEnemyBullet = [];
-  // Clear all ice bullets
   groupIceBullet = [];
-  // Reset player position and rotation
-  player = new Player(250, 400, player1Image); // Use player1 (1).png as default
-  // Clear all aliens
   groupAlien = [];
-  // Clear all pickups
   groupPickup = [];
-  // Reset flame state
   isFiring = false;
-  // Reset flame animation
   currentFrame = 0;
-  // Reset frame counter
   frameCounter = 0;
-  // Reset life pickup held
   lifePickupHeld = 0;
-  // Reset fire mode
   isFireMode = false;
-  // Reset fire mode timer
   fireModeStartTime = 0;
-  // Reset ice mode
   isIceMode = false;
-  // Reset ice mode timer
   iceModeStartTime = 0;
-  // Reset score
-  score = 0;
-  // Reset game state
-  state = 0;
-  // Reset last shot time
-  lastShotTime = 0;
-  // Reset laser mode
   isLaserMode = false;
-  // Reset laser mode timer
   laserModeStartTime = 0;
-  // Reset angel mode
   isAngelMode = false;
   angelModeStartTime = 0;
-  // Reset scrap mode
   isScrapMode = false;
   scrapModeStartTime = 0;
+  player = new Player(250, 400, player1Image);
+  if (toMenu) {
+    score = 0;
+    lives = 3;
+    currentRound = 1;
+    state = 0;
+  } else {
+    score = 0;
+    lives = 3;
+    currentRound = 1;
+    state = 1;
+    spawnAliens();
+  }
+}
+
+function resetGame() {
+  resetGameState({ toMenu: true });
+}
+
+function startGame() {
+  resetGameState({ toMenu: false });
 }
 
 function mousePressed() {
   if (state === 0) {
-    state = 1;
-    resetGame();
+    startGame();
   } else if (state === 3) {
-    state = 0;
     resetGame();
   }
 }
@@ -1452,6 +1344,12 @@ function keyPressed() {
     } else {
       console.log("Ice bullets only work in ice mode!");
     }
+  }
+
+  // Add r as reset to main menu (lowercase only)
+  if (key === "r") {
+    resetGame();
+    console.log("Game reset to main menu by r key");
   }
 }
 
@@ -1513,5 +1411,77 @@ function checkFlameConeCollision(x, y, rotation, layers) {
         }
       }
     }
+  }
+}
+
+function resetAllPowerups() {
+  isFireMode = false;
+  fireModeStartTime = 0;
+  isIceMode = false;
+  iceModeStartTime = 0;
+  isLaserMode = false;
+  laserModeStartTime = 0;
+  isAngelMode = false;
+  angelModeStartTime = 0;
+  isScrapMode = false;
+  scrapModeStartTime = 0;
+}
+
+function updateAllPowerups() {
+  let currentTime = millis();
+  if (isFireMode && currentTime - fireModeStartTime >= fireModeDuration) {
+    isFireMode = false;
+    drawSprite(
+      playerImage,
+      player.xPos + player.size / 2,
+      player.yPos + player.size / 2,
+      player.size,
+      player.rotation
+    );
+    console.log("Fire mode expired!");
+  }
+  if (isIceMode && currentTime - iceModeStartTime >= iceModeDuration) {
+    isIceMode = false;
+    drawSprite(
+      playerImage,
+      player.xPos + player.size / 2,
+      player.yPos + player.size / 2,
+      player.size,
+      player.rotation
+    );
+    console.log("Ice mode expired!");
+  }
+  if (isLaserMode && currentTime - laserModeStartTime >= laserModeDuration) {
+    isLaserMode = false;
+    drawSprite(
+      player1Image,
+      player.xPos + player.size / 2,
+      player.yPos + player.size / 2,
+      player.size,
+      player.rotation
+    );
+    console.log("Laser mode expired!");
+  }
+  if (isAngelMode && currentTime - angelModeStartTime >= angelModeDuration) {
+    isAngelMode = false;
+    drawSprite(
+      player1Image,
+      player.xPos + player.size / 2,
+      player.yPos + player.size / 2,
+      player.size,
+      player.rotation
+    );
+    console.log("Angel mode expired!");
+  }
+  if (isScrapMode && currentTime - scrapModeStartTime >= scrapModeDuration) {
+    isScrapMode = false;
+    drawSprite(
+      player1Image,
+      player.xPos + player.size / 2,
+      player.yPos + player.size / 2,
+      player.size,
+      player.rotation
+    );
+    console.log("Scrap mode expired!");
   }
 }

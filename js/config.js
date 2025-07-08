@@ -100,10 +100,10 @@ const GAME_CONFIG = {
   DARK_BULLET_DAMAGE: 10,
   DARK_BEAM_DAMAGE: 8, // Dark beam does 8 damage
   DARK_BEAM_RANGE: 400, // Range for beam activation
-  DARK_BEAM_LENGTH: 350, // Length of the beam
-  DARK_BEAM_WIDTH: 25, // Width of the beam
+  DARK_BEAM_LENGTH: 175, // Reduced from 350
+  DARK_BEAM_WIDTH: 12.5, // Reduced from 25
   DARK_MULTI_SHOOT_CHANCE: 0.012,
-  DARK_LASER_SPACING: 3, // 3 pixel spacing between lasers
+  DARK_LASER_SPACING: 6, // Increased from 3
   DARK_SHIELD_CONNECTOR_RANGE: 400, // Range for shield connectors
   DARK_SHIELD_MAX_CONNECTIONS: 3, // Maximum enemies to shield
   DARK_CONNECTOR_WIDTH: 3, // Width of connector lines
@@ -119,6 +119,7 @@ const IMAGE_PATHS = {
   SCRAP_SHIP: "images/player/scrap-ship.png",
 
   ENEMY: "images/enemies/n-enemy.png",
+  ENEMY_OLD: "images/enemies/enemy.png", // legacy, not used by default
   ICE_DRONE: "images/enemies/ice/ice1-drone.png",
   ICE_SLOWER: "images/enemies/ice/ice2-slower.png",
   ICE_SPEED: "images/enemies/ice/ice3-speed.png",
@@ -142,6 +143,7 @@ const IMAGE_PATHS = {
   REPAIR: "images/pick-ups/repair (1).png",
   SHIELD: "images/pick-ups/shield.png",
   SPEED: "images/pick-ups/speed.png",
+  HOLE: "images/pick-ups/hole-pickup.png",
 
   // Fire enemies
   FIRE_DRONE: "images/enemies/fire/fire2-drone.png",
@@ -167,4 +169,48 @@ const IMAGE_PATHS = {
   DARK_BULLET: "images/bullets/enemy-bullets/dark/dark-bullet.png",
   DARK_LASER: "images/bullets/enemy-bullets/dark/dark-laz.png",
   DARK_BEAM_BULLET: "images/bullets/enemy-bullets/dark/dark-beam.png",
+
+  // New enemy images
+  DARK1_BEAM: "images/enemies/dark/dark1-beam.png",
+  DARK2_SHIELD: "images/enemies/dark/dark2-shield.png",
+  DARK3_TANK: "images/enemies/dark/dark3-tank.png",
+  DARK4_MULTI: "images/enemies/dark/dark4-multi.png",
+  DARK5_DRONE: "images/enemies/dark/dark5-drone.png",
+
+  // New fire enemy images
+  FIRE1_ROCKET: "images/enemies/fire/fire1-rocket.png",
+  FIRE2_DRONE: "images/enemies/fire/fire2-drone.png",
+  FIRE3_SPEED: "images/enemies/fire/fire3-speed.png",
+
+  // New ice enemy images
+  ICE1_DRONE: "images/enemies/ice/ice1-drone.png",
+  ICE2_SLOWER: "images/enemies/ice/ice2-slower.png",
+  ICE3_SPEED: "images/enemies/ice/ice3-speed.png",
+  ICE5_BEAM: "images/enemies/ice/ice5-beam.png",
+
+  // New toxic enemy images
+  TOXIC1_DRONE: "images/enemies/toxic/toxic1-drone.png",
+  TOXIC2_GAS: "images/enemies/toxic/toxic2-gas.png",
+  TOXIC4_TANK: "images/enemies/toxic/toxic4-tank.png",
+
+  // New player bullet images
+  BLACK_BULLET: "images/bullets/player-bullets/black-bullet.png",
+  BLACKHOLE: "images/bullets/player-bullets/blackhole.png",
+
+  // New enemy bullet images
+  DARK_CONNECTOR: "images/bullets/enemy-bullets/dark/dark-connector.png",
+  DARK_LAZ: "images/bullets/enemy-bullets/dark/dark-laz.png",
+
+  // New fire enemy bullet images
+  FIRE_BULLET: "images/bullets/enemy-bullets/fire/fire-bullet.png",
+
+  // New ice enemy bullet images
+  ICE_BEAM_BULLET: "images/bullets/enemy-bullets/ice/ice-beam.png",
+  ICE_WAVE: "images/bullets/enemy-bullets/ice/ice-wave (1).png",
+  ICE_BULLET: "images/bullets/enemy-bullets/ice/ice-bullet.png",
+
+  // New toxic enemy bullet images
+  TOX_BULLET: "images/bullets/enemy-bullets/toxic/tox-bullet.png",
+  TOX_CAN: "images/bullets/enemy-bullets/toxic/tox-can.png",
+  TOX_EXPLO: "images/bullets/enemy-bullets/toxic/tox-explo.png",
 };

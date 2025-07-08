@@ -2,6 +2,8 @@
 let gameState;
 let gameManager;
 let assetManager;
+let roundInputActive = false;
+let roundInputValue = "";
 
 function preload() {
   console.log("Preloading assets...");
@@ -41,6 +43,9 @@ function draw() {
       if (gameManager.player) {
         gameManager.player.updateRotation();
         gameManager.player.draw();
+      }
+      if (roundInputActive) {
+        drawRoundInputBox();
       }
       break;
 
@@ -90,13 +95,14 @@ function updateGame() {
   gameManager.updateBullets();
   gameManager.updatePickups();
   gameManager.updateEnemyBullets();
+  gameManager.updateBlackBulletsAndHoles();
   gameManager.updateIceBullets();
 
-  // Update flame thrower
-  FlameSystem.updateFlameThrower();
-
-  // Handle player shooting
+  // Handle player shooting (mouse-based)
   WeaponSystem.handlePlayerShooting();
+
+  // Update flame thrower (keyboard-based)
+  FlameSystem.updateFlameThrower();
 
   // Check powerup expiration
   gameState.checkPowerupExpiration();
@@ -119,6 +125,55 @@ function mouseClicked() {
 }
 
 function keyPressed() {
+  // Test keys for activating modes (available during gameplay and between rounds)
+  if (key === "1") {
+    gameState.activatePowerup("fire-up");
+    console.log("Test: Fire mode activated");
+  }
+  if (key === "2") {
+    gameState.activatePowerup("ice-up");
+    console.log("Test: Ice mode activated");
+  }
+  if (key === "3") {
+    gameState.activatePowerup("laz-up");
+    console.log("Test: Laser mode activated");
+  }
+  if (key === "4") {
+    gameState.activatePowerup("scrap");
+    console.log("Test: Scrap mode activated");
+  }
+  if (key === "5") {
+    gameState.activatePowerup("speed");
+    console.log("Test: Speed mode activated");
+  }
+  if (key === "6") {
+    gameState.activatePowerup("shield");
+    console.log("Test: Shield activated");
+  }
+  if (key === "7") {
+    gameState.activatePowerup("life");
+    console.log("Test: Life pickup activated");
+  }
+  if (key === "8") {
+    gameState.activatePowerup("repair");
+    console.log("Test: Repair activated");
+  }
+  if (key === "9") {
+    gameState.activatePowerup("hole");
+    console.log("Test: Hole pickup activated");
+  }
+  if (key === "0") {
+    gameState.activateAngelMode();
+    console.log("Test: Angel mode activated");
+  }
+  if (key === "I" || key === "i") {
+    gameState.isInvincible = !gameState.isInvincible;
+    console.log(
+      "Test: Invincibility",
+      gameState.isInvincible ? "activated" : "deactivated"
+    );
+  }
+
   if (gameState.state === GAME_CONFIG.STATES.PLAYING) {
     if (key === "F" || key === "f") {
       FlameSystem.activateFlameThrower();
@@ -127,80 +182,41 @@ function keyPressed() {
     if (key === "E" || key === "e") {
       WeaponSystem.fireIceBullet();
     }
+
+    // Fire black bullet with Q
+    if (key === "Q" || key === "q") {
+      // Calculate bullet spawn position at ship's nose
+      let bulletSpawnPos = gameManager.player.getBulletSpawnPosition();
+      gameManager.fireBlackBullet(
+        bulletSpawnPos.x,
+        bulletSpawnPos.y,
+        gameManager.player.rotation
+      );
+    }
   }
 
-  // Start at different enemy types for testing
   if (gameState.state === GAME_CONFIG.STATES.TITLE) {
     if (key === "I" || key === "i") {
-      console.log("Starting game at ice rounds (wave 15)...");
-      gameState.startGame();
-      gameState.currentRound = 15; // Set to first ice wave
-      gameManager.reset();
-      gameManager.spawnAliens();
-      console.log(
-        "Game started at wave 15 (ice rounds). State:",
-        gameState.state
-      );
+      roundInputActive = true;
+      roundInputValue = "";
     }
+  }
 
-    if (key === "F" || key === "f") {
-      console.log("Starting game at fire rounds (wave 30)...");
-      gameState.startGame();
-      gameState.currentRound = 30; // Set to first fire wave
-      gameManager.reset();
-      gameManager.spawnAliens();
-      console.log(
-        "Game started at wave 30 (fire rounds). State:",
-        gameState.state
-      );
-    }
-
-    if (key === "T" || key === "t") {
-      console.log("Starting game at toxic rounds (wave 50)...");
-      gameState.startGame();
-      gameState.currentRound = 50; // Set to first toxic wave
-      gameManager.reset();
-      gameManager.spawnAliens();
-      console.log(
-        "Game started at wave 50 (toxic rounds). State:",
-        gameState.state
-      );
-    }
-
-    if (key === "D" || key === "d") {
-      console.log("Starting game at dark rounds (wave 60)...");
-      gameState.startGame();
-      gameState.currentRound = 60; // Set to first dark wave
-      gameManager.reset();
-      gameManager.spawnAliens();
-      console.log(
-        "Game started at wave 60 (dark rounds). State:",
-        gameState.state
-      );
-    }
-
-    if (key === "B" || key === "b") {
-      console.log("Starting game at ice beam rounds (wave 25)...");
-      gameState.startGame();
-      gameState.currentRound = 25; // Set to ice beam wave
-      gameManager.reset();
-      gameManager.spawnAliens();
-      console.log(
-        "Game started at wave 25 (ice beam rounds). State:",
-        gameState.state
-      );
-    }
-
-    if (key === "S" || key === "s") {
-      console.log("Starting game at dark shield rounds (wave 60)...");
-      gameState.startGame();
-      gameState.currentRound = 60; // Set to dark shield wave
-      gameManager.reset();
-      gameManager.spawnAliens();
-      console.log(
-        "Game started at wave 60 (dark shield rounds). State:",
-        gameState.state
-      );
+  if (roundInputActive) {
+    if (keyCode === ENTER) {
+      let roundNum = parseInt(roundInputValue);
+      if (!isNaN(roundNum) && roundNum > 0) {
+        gameState.startGame();
+        gameState.currentRound = roundNum;
+        gameManager.reset();
+        gameManager.spawnAliens();
+        roundInputActive = false;
+        roundInputValue = "";
+      }
+    } else if (keyCode === BACKSPACE) {
+      roundInputValue = roundInputValue.slice(0, -1);
+    } else if (key.length === 1 && /[0-9]/.test(key)) {
+      roundInputValue += key;
     }
   }
 }
@@ -219,4 +235,19 @@ function resetGame() {
   gameManager.reset();
   gameManager.spawnAliens();
   console.log("Game reset. State:", gameState.state);
+}
+
+function drawRoundInputBox() {
+  push();
+  fill(30, 30, 30, 220);
+  stroke(255);
+  rectMode(CENTER);
+  rect(width / 2, height / 2, 300, 80, 10);
+  fill(255);
+  textAlign(CENTER, CENTER);
+  textSize(22);
+  text("Enter round number:", width / 2, height / 2 - 18);
+  textSize(32);
+  text(roundInputValue, width / 2, height / 2 + 18);
+  pop();
 }

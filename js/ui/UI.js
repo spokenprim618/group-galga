@@ -1,3 +1,11 @@
+function drawSprite(img, x, y, size, rotation = 0) {
+  push();
+  translate(x + size / 2, y + size / 2);
+  if (rotation) rotate(rotation);
+  image(img, -size / 2, -size / 2, size, size);
+  pop();
+}
+
 class UI {
   static drawTitleScreen() {
     fill(255, 255, 255);
@@ -63,88 +71,76 @@ class UI {
     let startX = width / 2 - 5.5 * spriteSize;
 
     // Draw all available images in a row
-    image(
+    drawSprite(
       assetManager.getImage("angel"),
       startX + 0 * spriteSize,
       spriteY,
-      spriteSize,
       spriteSize
     );
-    image(
+    drawSprite(
       assetManager.getImage("fireUp"),
       startX + 1 * spriteSize,
       spriteY,
-      spriteSize,
       spriteSize
     );
-    image(
+    drawSprite(
       assetManager.getImage("fire2"),
       startX + 2 * spriteSize,
       spriteY,
-      spriteSize,
       spriteSize
     );
-    image(
+    drawSprite(
       assetManager.getImage("iceUp"),
       startX + 3 * spriteSize,
       spriteY,
-      spriteSize,
       spriteSize
     );
-    image(
+    drawSprite(
       assetManager.getImage("ice2"),
       startX + 4 * spriteSize,
       spriteY,
-      spriteSize,
       spriteSize
     );
-    image(
+    drawSprite(
       assetManager.getImage("player1"),
       startX + 5 * spriteSize,
       spriteY,
-      spriteSize,
       spriteSize
     );
-    image(
+    drawSprite(
       assetManager.getImage("repair"),
       startX + 6 * spriteSize,
       spriteY,
-      spriteSize,
       spriteSize
     );
-    image(
+    drawSprite(
       assetManager.getImage("life"),
       startX + 7 * spriteSize,
       spriteY,
-      spriteSize,
       spriteSize
     );
-    image(
+    drawSprite(
       assetManager.getImage("player"),
       startX + 8 * spriteSize,
       spriteY,
-      spriteSize,
       spriteSize
     );
-    image(
+    drawSprite(
       assetManager.getImage("enemy"),
       startX + 9 * spriteSize,
       spriteY,
-      spriteSize,
       spriteSize
     );
-    image(
+    drawSprite(
       assetManager.getImage("bullet"),
       startX + 10 * spriteSize,
       spriteY,
-      spriteSize,
       spriteSize
     );
-    image(
+    drawSprite(
       assetManager.getImage("enemyBullet"),
       startX + 11 * spriteSize,
       spriteY,
-      spriteSize,
       spriteSize
     );
   }
@@ -159,13 +155,13 @@ class UI {
     // Display shields in top right
     text("Shields: " + gameState.shields, 950, 40);
     if (gameState.shields > 0) {
-      image(assetManager.getImage("shield"), 850, 30, 30, 30);
+      drawSprite(assetManager.getImage("shield"), 850, 30, 30);
     }
 
     // Display life pickup if held
     if (gameState.lifePickupHeld > 0) {
       text("Life Pickup: " + gameState.lifePickupHeld, 950, 60);
-      image(assetManager.getImage("life"), 850, 50, 30, 30);
+      drawSprite(assetManager.getImage("life"), 850, 50, 30);
     }
 
     this.drawPowerupStatus();
@@ -317,23 +313,30 @@ class UI {
     textSize(16); // Reset text size
   }
 
-  static checkStartButtonClick() {
+  // Utility for button click detection
+  static isButtonClicked(x, y, w, h, mx = mouseX, my = mouseY) {
+    return mx >= x && mx <= x + w && my >= y && my <= y + h;
+  }
+
+  static checkStartButtonClick(mx = mouseX, my = mouseY) {
     let buttonX = width / 2 - 50;
     let buttonY = 190;
     let buttonWidth = 100;
     let buttonHeight = 50;
-
-    let isClicked =
-      mouseX >= buttonX &&
-      mouseX <= buttonX + buttonWidth &&
-      mouseY >= buttonY &&
-      mouseY <= buttonY + buttonHeight;
+    let isClicked = UI.isButtonClicked(
+      buttonX,
+      buttonY,
+      buttonWidth,
+      buttonHeight,
+      mx,
+      my
+    );
     console.log(
       "Start button check:",
       isClicked,
       "Mouse position:",
-      mouseX,
-      mouseY,
+      mx,
+      my,
       "Button area:",
       buttonX,
       buttonY,
@@ -343,23 +346,25 @@ class UI {
     return isClicked;
   }
 
-  static checkTryAgainButtonClick() {
+  static checkTryAgainButtonClick(mx = mouseX, my = mouseY) {
     let buttonX = width / 2 - 100;
     let buttonY = height / 2 + 80;
     let buttonWidth = 200;
     let buttonHeight = 50;
-
-    let isClicked =
-      mouseX >= buttonX &&
-      mouseX <= buttonX + buttonWidth &&
-      mouseY >= buttonY &&
-      mouseY <= buttonY + buttonHeight;
+    let isClicked = UI.isButtonClicked(
+      buttonX,
+      buttonY,
+      buttonWidth,
+      buttonHeight,
+      mx,
+      my
+    );
     console.log(
       "Try again button check:",
       isClicked,
       "Mouse position:",
-      mouseX,
-      mouseY,
+      mx,
+      my,
       "Button area:",
       buttonX,
       buttonY,

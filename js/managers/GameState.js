@@ -6,6 +6,7 @@ class GameState {
     this.score = 0;
     this.currentRound = 1;
     this.lifePickupHeld = 0;
+    this.isInvincible = false;
 
     // Powerup states
     this.isFireMode = false;
@@ -32,6 +33,7 @@ class GameState {
     // Between rounds state
     this.isBetweenRounds = false;
     this.betweenRoundsStartTime = 0;
+    this.betweenRoundsPowerupPauseStart = null;
 
     // Shooting cooldown
     this.lastShotTime = 0;
@@ -44,6 +46,7 @@ class GameState {
     this.score = 0;
     this.currentRound = 1;
     this.lifePickupHeld = 0;
+    this.isInvincible = false;
 
     // Reset all powerup states
     this.isFireMode = false;
@@ -68,6 +71,7 @@ class GameState {
     // Reset between rounds state
     this.isBetweenRounds = false;
     this.betweenRoundsStartTime = 0;
+    this.betweenRoundsPowerupPauseStart = null;
 
     // Reset shooting cooldown
     this.lastShotTime = 0;
@@ -81,6 +85,7 @@ class GameState {
     this.score = 0;
     this.currentRound = 1;
     this.lifePickupHeld = 0;
+    this.isInvincible = false;
 
     // Reset all powerup states
     this.isFireMode = false;
@@ -105,6 +110,7 @@ class GameState {
     // Reset between rounds state
     this.isBetweenRounds = false;
     this.betweenRoundsStartTime = 0;
+    this.betweenRoundsPowerupPauseStart = null;
 
     // Reset shooting cooldown
     this.lastShotTime = 0;
@@ -123,27 +129,22 @@ class GameState {
     // Only one powerup at a time (fire, ice, laser, scrap)
     switch (type) {
       case "fire-up":
-        this.deactivateAllPowerups();
         this.isFireMode = true;
         this.fireModeStartTime = millis();
         break;
       case "ice-up":
-        this.deactivateAllPowerups();
         this.isIceMode = true;
         this.iceModeStartTime = millis();
         break;
       case "laz-up":
-        this.deactivateAllPowerups();
         this.isLaserMode = true;
         this.laserModeStartTime = millis();
         break;
       case "scrap":
-        this.deactivateAllPowerups();
         this.isScrapMode = true;
         this.scrapModeStartTime = millis();
         break;
       case "speed":
-        this.deactivateAllPowerups();
         this.isSpeedMode = true;
         this.speedModeStartTime = millis();
         break;
@@ -303,6 +304,7 @@ class GameState {
   startBetweenRounds() {
     this.isBetweenRounds = true;
     this.betweenRoundsStartTime = millis();
+    this.betweenRoundsPowerupPauseStart = millis();
   }
 
   checkBetweenRoundsComplete() {
@@ -314,6 +316,17 @@ class GameState {
       ) {
         this.isBetweenRounds = false;
         this.currentRound++;
+        // Adjust powerup timers to pause during between-rounds
+        if (this.betweenRoundsPowerupPauseStart) {
+          let pauseDuration = currentTime - this.betweenRoundsPowerupPauseStart;
+          if (this.isFireMode) this.fireModeStartTime += pauseDuration;
+          if (this.isIceMode) this.iceModeStartTime += pauseDuration;
+          if (this.isLaserMode) this.laserModeStartTime += pauseDuration;
+          if (this.isAngelMode) this.angelModeStartTime += pauseDuration;
+          if (this.isScrapMode) this.scrapModeStartTime += pauseDuration;
+          if (this.isSpeedMode) this.speedModeStartTime += pauseDuration;
+          this.betweenRoundsPowerupPauseStart = null;
+        }
         return true;
       }
     }

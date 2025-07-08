@@ -92,42 +92,32 @@ class FlameSystem {
             gameState.lastFrameTime = currentTime;
           }
 
-          // Draw pre-rendered flame cone at the player's nose, oriented to player's rotation
-          push();
-          translate(
-            gameManager.player.xPos + gameManager.player.size / 2,
-            gameManager.player.yPos + gameManager.player.size / 2
-          );
-          rotate(gameManager.player.rotation);
+          // Draw flame cone attached to player sprite
+          let flameX = gameManager.player.xPos + gameManager.player.size / 2;
+          let flameY = gameManager.player.yPos + gameManager.player.size / 2- ;
 
-          if (
-            assetManager.getFlameConeGraphic() &&
-            assetManager.isFlameImageLoaded()
-          ) {
-            image(
-              assetManager.getFlameConeGraphic(),
-              -gameManager.player.size - 9,
-              -gameManager.player.size * 2.5
-            );
-          } else if (assetManager.getFlameConeFallbackGraphic()) {
-            image(
-              assetManager.getFlameConeFallbackGraphic(),
-              -gameManager.player.size - 9,
-              -gameManager.player.size * 2.5
-            );
+          let flameImage =
+            assetManager.getFlameConeGraphic() ||
+            assetManager.getFlameConeFallbackGraphic();
+
+          if (flameImage) {
+            // Draw flame cone with rotation
+            push();
+            translate(flameX, flameY);
+            rotate(gameManager.player.rotation);
+            image(flameImage, -flameImage.width / 2, -flameImage.height / 2);
+            pop();
           } else {
-            // Fallback: draw simple rectangle if no graphics available
+            // Fallback: draw simple rectangle
+            push();
+            translate(flameX, flameY);
+            rotate(gameManager.player.rotation);
             fill(255, 100, 0, 200);
-            rect(
-              -gameManager.player.size - 19,
-              -gameManager.player.size * 2.5 - 10,
-              20,
-              20
-            );
+            rect(-10, -10, 20, 20);
+            pop();
           }
-
-          pop();
         }
+
         gameState.frameCounter++;
 
         // Check flame cone collision with aliens (always check for gameplay)

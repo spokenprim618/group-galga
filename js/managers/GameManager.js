@@ -5,7 +5,93 @@ class GameManager {
     this.groupEnemyBullet = [];
     this.groupPickup = [];
     this.groupIceBullet = [];
+    this.groupBlackBullet = [];
+    this.groupBlackHole = [];
     this.player = null;
+    // Black hole feature state
+    this.holePickupCollected = false;
+    this.blackBulletUses = 0;
+    this.maxBlackBulletUses = 2;
+    this.activeBlackHole = null; // { x, y, startTime }
+    this.isBlackHoleMode = false;
+  }
+
+  getRandomEnemyTypeForRound(
+    round,
+    enemyTypes,
+    droneCount,
+    maxDrones,
+    guaranteedDarkMulti,
+    i
+  ) {
+    if (guaranteedDarkMulti && i === 0) {
+      return "darkMulti";
+    }
+    let currentEnemyType = "";
+    if (round >= 15 && round < 30) {
+      currentEnemyType = "ice";
+    } else if (round >= 30 && round < 50) {
+      currentEnemyType = "fire";
+    } else if (round >= 50 && round < 60) {
+      currentEnemyType = "toxic";
+    } else if (round >= 60 && round < 75) {
+      currentEnemyType = "dark";
+    }
+    if (droneCount < 2 && currentEnemyType !== "") {
+      let droneTypes = enemyTypes.filter((type) =>
+        type.includes(currentEnemyType + "Drone")
+      );
+      if (droneTypes.length > 0) {
+        return random(droneTypes);
+      } else {
+        return random(enemyTypes);
+      }
+    } else if (droneCount < maxDrones && random() < 0.4) {
+      let droneTypes = enemyTypes.filter((type) => type.includes("Drone"));
+      if (droneTypes.length > 0) {
+        return random(droneTypes);
+      } else {
+        return random(enemyTypes);
+      }
+    } else {
+      return random(enemyTypes);
+    }
+  }
+
+  spawnEnemyOfType(type, x, y) {
+    switch (type) {
+      case "regular":
+        return new Alien(x, y, assetManager.getImageForType("enemy"));
+      case "iceDrone":
+        return new IceDrone(x, y);
+      case "iceSlower":
+        return new IceSlower(x, y);
+      case "iceSpeed":
+        return new IceSpeed(x, y);
+      case "iceBeam":
+        return new IceBeamEnemy(x, y);
+      case "fireDrone":
+        return new FireDrone(x, y);
+      case "fireSpeed":
+        return new FireSpeed(x, y);
+      case "rocket":
+        return new RocketEnemy(x, y);
+      case "toxicDrone":
+        return new ToxicDrone(x, y);
+      case "toxicGas":
+        return new ToxicGas(x, y);
+      case "darkDrone":
+        return new DarkDrone(x, y);
+      case "darkBeam":
+        return new DarkBeamEnemy(x, y);
+      case "darkMulti":
+        return new DarkMultiEnemy(x, y);
+      case "darkShield":
+        return new DarkShieldEnemy(x, y);
+      default:
+        console.warn("Unknown enemy type:", type, "using regular enemy");
+        return new Alien(x, y, assetManager.getImageForType("enemy"));
+    }
   }
 
   spawnAliens() {
@@ -19,17 +105,9 @@ class GameManager {
     // Spawn 5 enemies per wave
     let numEnemies = 5;
 
-    // Determine which enemy type we're in and ensure at least 2 drones of that type
-    let currentEnemyType = "";
-    if (round >= 15 && round < 30) {
-      currentEnemyType = "ice"; // Ice rounds
-    } else if (round >= 30 && round < 50) {
-      currentEnemyType = "fire"; // Fire rounds
-    } else if (round >= 50 && round < 60) {
-      currentEnemyType = "toxic"; // Toxic rounds
-    } else if (round >= 60 && round < 75) {
-      currentEnemyType = "dark"; // Dark rounds
-    }
+    // Guarantee at least one darkMulti in rounds 75-80
+    let guaranteedDarkMulti =
+      round >= 75 && round <= 80 && enemyTypes.includes("darkMulti");
 
     let droneCount = 0;
     let maxDrones = 3; // Allow up to 3 drones
@@ -37,87 +115,16 @@ class GameManager {
     for (let i = 0; i < numEnemies; i++) {
       let x = random(50, width - 100);
       let y = random(50, 200);
-
-      let enemyType;
-
-      // Ensure at least 2 drones of the current enemy type spawn
-      if (droneCount < 2 && currentEnemyType !== "") {
-        // Force a drone type of the current enemy type
-        let droneTypes = enemyTypes.filter((type) =>
-          type.includes(currentEnemyType + "Drone")
-        );
-        if (droneTypes.length > 0) {
-          enemyType = random(droneTypes);
-          droneCount++;
-        } else {
-          // If no drone types available, use any available type
-          enemyType = random(enemyTypes);
-        }
-      } else if (droneCount < maxDrones && random() < 0.4) {
-        // 40% chance to spawn additional drones (up to maxDrones)
-        let droneTypes = enemyTypes.filter((type) => type.includes("Drone"));
-        if (droneTypes.length > 0) {
-          enemyType = random(droneTypes);
-          droneCount++;
-        } else {
-          enemyType = random(enemyTypes);
-        }
-      } else {
-        // Random selection from available types
-        enemyType = random(enemyTypes);
-      }
-
-      let enemy;
-
-      switch (enemyType) {
-        case "regular":
-          enemy = new Alien(x, y, assetManager.getImage("enemy"));
-          break;
-        case "iceDrone":
-          enemy = new IceDrone(x, y);
-          break;
-        case "iceSlower":
-          enemy = new IceSlower(x, y);
-          break;
-        case "iceSpeed":
-          enemy = new IceSpeed(x, y);
-          break;
-        case "iceBeam":
-          enemy = new IceBeamEnemy(x, y);
-          break;
-        case "fireDrone":
-          enemy = new FireDrone(x, y);
-          break;
-        case "fireSpeed":
-          enemy = new FireSpeed(x, y);
-          break;
-        case "rocket":
-          enemy = new RocketEnemy(x, y);
-          break;
-        case "toxicDrone":
-          enemy = new ToxicDrone(x, y);
-          break;
-        case "toxicGas":
-          enemy = new ToxicGas(x, y);
-          break;
-        case "darkDrone":
-          enemy = new DarkDrone(x, y);
-          break;
-        case "darkBeam":
-          enemy = new DarkBeamEnemy(x, y);
-          break;
-        case "darkMulti":
-          enemy = new DarkMultiEnemy(x, y);
-          break;
-        case "darkShield":
-          enemy = new DarkShieldEnemy(x, y);
-          break;
-        default:
-          console.warn("Unknown enemy type:", enemyType, "using regular enemy");
-          enemy = new Alien(x, y, assetManager.getImage("enemy"));
-          break;
-      }
-
+      let enemyType = this.getRandomEnemyTypeForRound(
+        round,
+        enemyTypes,
+        droneCount,
+        maxDrones,
+        guaranteedDarkMulti,
+        i
+      );
+      if (enemyType && enemyType.includes("Drone")) droneCount++;
+      let enemy = this.spawnEnemyOfType(enemyType, x, y);
       this.groupAlien.push(enemy);
     }
 
@@ -171,8 +178,11 @@ class GameManager {
     } else if (round >= 70 && round < 75) {
       // Waves 70-74: Dark multi enemies, dark drones, and dark shields
       return ["darkMulti", "darkDrone", "darkShield"];
-    } else if (round >= 75) {
-      // Wave 75+: All enemy types including dark
+    } else if (round >= 75 && round <= 80) {
+      // Waves 75-80: Still dark rounds, but darkMulti spawns as usual
+      return ["darkMulti", "darkDrone", "darkShield", "darkBeam"];
+    } else if (round > 80) {
+      // Wave 81+: All enemy types including dark
       return [
         "iceDrone",
         "iceSlower",
@@ -199,9 +209,18 @@ class GameManager {
     if (random() < GAME_CONFIG.PICKUP_SPAWN_CHANCE) {
       let pickupType;
       if (gameState.lifePickupHeld > 0) {
-        pickupType = random(Pickup.getPickupTypesWithoutLife());
+        // Only allow 'hole' pickup in dark rounds
+        let types = Pickup.getPickupTypesWithoutLife();
+        if (!this.isDarkRound()) {
+          types = types.filter((t) => t !== "hole");
+        }
+        pickupType = random(types);
       } else {
-        pickupType = random(Pickup.getPickupTypes());
+        let types = Pickup.getPickupTypes();
+        if (!this.isDarkRound()) {
+          types = types.filter((t) => t !== "hole");
+        }
+        pickupType = random(types);
       }
 
       let pickupImage = this.getPickupImage(pickupType);
@@ -211,48 +230,39 @@ class GameManager {
   }
 
   getPickupImage(type) {
-    switch (type) {
-      case "fire-up":
-        return assetManager.getImage("fireUp");
-      case "ice-up":
-        return assetManager.getImage("iceUp");
-      case "laz-up":
-        return assetManager.getImage("lazUp");
-      case "scrap":
-        return assetManager.getImage("scrap");
-      case "life":
-        return assetManager.getImage("life");
-      case "repair":
-        return assetManager.getImage("repair");
-      case "shield":
-        return assetManager.getImage("shield");
-      case "speed":
-        return assetManager.getImage("speed");
-      default:
-        return assetManager.getImage("repair");
-    }
+    return assetManager.getImageForType(type);
   }
 
   updatePlayerMovement() {
+    // Clear slow effect if timer expired
+    if (this.player.isSlowed && millis() > this.player.slowEndTime) {
+      this.player.isSlowed = false;
+    }
+    // Use slower speed if slowed
+    let moveSpeed = this.player.isSlowed
+      ? GAME_CONFIG.PLAYER_SPEED_SLOWED || 2
+      : GAME_CONFIG.PLAYER_SPEED || 5;
     if (keyIsDown(65)) {
       // A key
-      this.player.move("left");
+      this.player.move("left", moveSpeed);
     }
     if (keyIsDown(68)) {
       // D key
-      this.player.move("right");
+      this.player.move("right", moveSpeed);
     }
     if (keyIsDown(83)) {
       // S key
-      this.player.move("down");
+      this.player.move("down", moveSpeed);
     }
     if (keyIsDown(87)) {
       // W key
-      this.player.move("up");
+      this.player.move("up", moveSpeed);
     }
   }
 
   updateAliens() {
+    // Always clear orphaned shields before updating
+    this.clearOrphanedShields();
     for (let i = this.groupAlien.length - 1; i >= 0; i--) {
       if (!this.groupAlien[i]) {
         this.groupAlien.splice(i, 1);
@@ -426,6 +436,8 @@ class GameManager {
           // Handle dark shield enemy destruction
           if (this.groupAlien[j].type === "darkShield") {
             this.groupAlien[j].onDestroy();
+            // After removing the shield, clear shields from all enemies whose shielder is gone
+            this.clearOrphanedShields();
           }
 
           // Spawn pickup at enemy location before removing it
@@ -474,95 +486,86 @@ class GameManager {
 
   updateEnemyBullets() {
     for (let i = this.groupEnemyBullet.length - 1; i >= 0; i--) {
-      if (!this.groupEnemyBullet[i]) {
+      let bullet = this.groupEnemyBullet[i];
+      if (!bullet) {
         this.groupEnemyBullet.splice(i, 1);
         continue;
       }
 
-      try {
-        this.groupEnemyBullet[i].move();
-        this.groupEnemyBullet[i].draw();
+      bullet.move();
 
-        // Apply toxic gas lingering damage
-        if (this.groupEnemyBullet[i] instanceof ToxicGasBullet && this.player) {
-          this.groupEnemyBullet[i].applyGasDamage(this.player);
-        }
+      // Add ticking for RocketBullet (sidewinder)
+      if (bullet instanceof RocketBullet) {
+        bullet.applyDamageOverTime();
+      }
 
-        // Check collision with player (ignore SawBladeBullet)
-        if (
-          this.player &&
-          !(this.groupEnemyBullet[i] instanceof SawBladeBullet) &&
-          this.groupEnemyBullet[i].checkCollision(this.player)
-        ) {
-          // Determine damage based on bullet type
-          let damage = 10; // Default damage for regular enemy bullets
+      if (bullet.shouldExplode && bullet.shouldExplode()) {
+        bullet.explode();
+      }
 
-          if (this.groupEnemyBullet[i] instanceof EnemyIceBullet) {
-            damage = GAME_CONFIG.ICE_BULLET_DAMAGE; // 20 damage for ice bullets
-          } else if (this.groupEnemyBullet[i] instanceof IceWaveBullet) {
-            damage = GAME_CONFIG.ICE_WAVE_DAMAGE; // 20 damage for ice wave
-          } else if (this.groupEnemyBullet[i] instanceof FireBullet) {
-            damage = GAME_CONFIG.FIRE_BULLET_DAMAGE; // 15 damage for fire bullets
-          } else if (this.groupEnemyBullet[i] instanceof RocketBullet) {
-            // Rocket bullets attach to player and do damage over time
-            this.groupEnemyBullet[i].attachToPlayer(this.player);
-            continue; // Don't remove the rocket, let it attach
-          } else if (this.groupEnemyBullet[i] instanceof ToxicBullet) {
-            damage = GAME_CONFIG.TOXIC_BULLET_DAMAGE;
-          } else if (this.groupEnemyBullet[i] instanceof DarkBullet) {
-            damage = GAME_CONFIG.DARK_BULLET_DAMAGE;
-          } else if (this.groupEnemyBullet[i] instanceof DarkMultiBullet) {
-            damage = GAME_CONFIG.DARK_BULLET_DAMAGE;
-          } else if (this.groupEnemyBullet[i] instanceof ToxicGasBullet) {
-            // If not exploded, trigger explosion
-            if (this.groupEnemyBullet[i].shouldExplode()) {
-              this.groupEnemyBullet[i].explode();
-              continue; // Don't remove yet
-            }
-            // If exploded and player is in gas, apply damage
-            if (
-              this.groupEnemyBullet[i].hasExploded &&
-              this.groupEnemyBullet[i].checkExplosionCollision(this.player)
-            ) {
-              damage = GAME_CONFIG.TOXIC_GAS_DAMAGE;
-            } else {
-              continue; // No damage if not in gas
-            }
-          }
+      if (bullet.shouldRemove && bullet.shouldRemove()) {
+        this.groupEnemyBullet.splice(i, 1);
+        continue;
+      }
 
-          // Use shield first if available, otherwise take health damage
-          if (gameState.shields > 0) {
-            gameState.shields--; // Remove one shield
-            console.log(
-              "Shield absorbed damage! Shields remaining:",
-              gameState.shields
-            );
-          } else {
-            gameState.health -= damage; // Deal damage based on bullet type
-            console.log("Player hit! Health remaining:", gameState.health);
-          }
+      if (bullet instanceof ToxicGasBullet && this.player) {
+        bullet.applyGasDamage(this.player);
+      }
+
+      // Restore regular enemy bullet collision and damage
+      if (
+        this.player &&
+        !(bullet instanceof SawBladeBullet) &&
+        bullet.checkCollision(this.player)
+      ) {
+        // Skip damage if player is invincible
+        if (gameState.isInvincible) {
           this.groupEnemyBullet.splice(i, 1);
-          this.checkGameOver();
           continue;
         }
 
-        // Apply damage over time for attached rockets
-        if (this.groupEnemyBullet[i] instanceof RocketBullet) {
-          this.groupEnemyBullet[i].applyDamageOverTime();
+        let damage = 10; // Default
+        if (bullet instanceof EnemyIceBullet)
+          damage = GAME_CONFIG.ICE_BULLET_DAMAGE;
+        else if (bullet instanceof IceWaveBullet)
+          damage = GAME_CONFIG.ICE_WAVE_DAMAGE;
+        else if (bullet instanceof FireBullet)
+          damage = GAME_CONFIG.FIRE_BULLET_DAMAGE;
+        else if (bullet instanceof ToxicBullet)
+          damage = GAME_CONFIG.TOXIC_BULLET_DAMAGE;
+        else if (bullet instanceof DarkBullet)
+          damage = GAME_CONFIG.DARK_BULLET_DAMAGE;
+        else if (bullet instanceof DarkMultiBullet)
+          damage = GAME_CONFIG.DARK_BULLET_DAMAGE;
+
+        if (bullet instanceof RocketBullet) {
+          bullet.attachToPlayer(this.player);
+          continue;
         }
 
-        // Remove bullets that are off screen or should be removed
-        if (
-          this.groupEnemyBullet[i].isOffScreen() ||
-          (this.groupEnemyBullet[i].shouldRemove &&
-            this.groupEnemyBullet[i].shouldRemove())
-        ) {
-          this.groupEnemyBullet.splice(i, 1);
+        if (bullet instanceof IceWaveBullet) {
+          // Apply slow effect to player
+          this.player.isSlowed = true;
+          this.player.slowEndTime =
+            millis() + (GAME_CONFIG.ICE_WAVE_SLOW_DURATION || 2000);
         }
-      } catch (error) {
-        console.log("Error updating enemy bullet:", error);
+
+        if (gameState.shields > 0) {
+          gameState.shields--;
+          console.log(
+            "Shield absorbed damage! Shields remaining:",
+            gameState.shields
+          );
+        } else {
+          gameState.health -= damage;
+          console.log("Player hit! Health remaining:", gameState.health);
+        }
         this.groupEnemyBullet.splice(i, 1);
+        this.checkGameOver();
+        continue;
       }
+
+      bullet.draw();
     }
   }
 
@@ -576,9 +579,25 @@ class GameManager {
       this.groupIceBullet[i].move();
       this.groupIceBullet[i].draw();
 
-      // Check if ice bullet should explode
-      if (this.groupIceBullet[i].shouldExplode()) {
-        this.groupIceBullet[i].explode();
+      // If the bullet hasn't exploded, check if any enemy is in range
+      if (!this.groupIceBullet[i].hasExploded) {
+        for (let j = this.groupAlien.length - 1; j >= 0; j--) {
+          if (!this.groupAlien[j]) continue;
+          // Use the same logic as checkExplosionCollision, but before explosion
+          let bullet = this.groupIceBullet[i];
+          let alien = this.groupAlien[j];
+          let explosionCenterX = bullet.xPos + bullet.size / 2;
+          let explosionCenterY = bullet.yPos + bullet.size / 2;
+          let alienCenterX = alien.xPos + alien.size / 2;
+          let alienCenterY = alien.yPos + alien.size / 2;
+          let dx = alienCenterX - explosionCenterX;
+          let dy = alienCenterY - explosionCenterY;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < bullet.explosionSize / 2) {
+            bullet.explode();
+            break; // Only explode once per bullet
+          }
+        }
       }
 
       // Check for explosion collisions with aliens (only after explosion)
@@ -597,6 +616,8 @@ class GameManager {
             // Handle dark shield enemy destruction
             if (this.groupAlien[j].type === "darkShield") {
               this.groupAlien[j].onDestroy();
+              // After removing the shield, clear shields from all enemies whose shielder is gone
+              this.clearOrphanedShields();
             }
 
             // Spawn pickup at enemy location before removing it
@@ -621,34 +642,42 @@ class GameManager {
   }
 
   updatePlayerImage() {
+    if (this.isBlackHoleMode && !gameState.isAngelMode) {
+      this.player.image = assetManager.getImageForType("player1"); // Or a special image if desired
+      return;
+    }
     if (gameState.isFireMode) {
-      this.player.image = assetManager.getImage("fire2");
+      this.player.image = assetManager.getImageForType("fire2");
     } else if (gameState.isIceMode) {
-      this.player.image = assetManager.getImage("ice2");
+      this.player.image = assetManager.getImageForType("ice2");
     } else if (gameState.isLaserMode) {
-      this.player.image = assetManager.getImage("player");
+      this.player.image = assetManager.getImageForType("player");
     } else if (gameState.isScrapMode) {
-      this.player.image = assetManager.getImage("scrapShip");
+      this.player.image = assetManager.getImageForType("scrapShip");
     } else if (gameState.isAngelMode) {
-      this.player.image = assetManager.getImage("angel");
+      this.player.image = assetManager.getImageForType("angel");
     } else {
-      this.player.image = assetManager.getImage("player1");
+      this.player.image = assetManager.getImageForType("player1");
+    }
+  }
+
+  handleGameOver() {
+    // Check if player has a life pickup to auto-restore
+    if (gameState.lifePickupHeld > 0) {
+      gameState.activateAngelMode();
+      this.updatePlayerImage();
+      // Prevent immediate game over by skipping the rest of this block
+      return;
+    } else {
+      this.clearAllBullets();
+      gameState.deactivateAllPowerups && gameState.deactivateAllPowerups();
+      gameState.gameOver();
     }
   }
 
   checkGameOver() {
     if (gameState.health <= 0) {
-      // Check if player has a life pickup to auto-restore
-      if (gameState.lifePickupHeld > 0) {
-        gameState.activateAngelMode();
-        this.updatePlayerImage(); // Properly update player image
-        // Prevent immediate game over by skipping the rest of this block
-        return;
-      } else {
-        this.clearAllBullets();
-        gameState.deactivateAllPowerups();
-        gameState.gameOver();
-      }
+      this.handleGameOver();
     }
   }
 
@@ -669,5 +698,125 @@ class GameManager {
       GAME_CONFIG.PLAYER_START_Y,
       assetManager.getImage("player1")
     );
+  }
+
+  // Call this when a pickup is collected
+  onPickupCollected(type) {
+    if (type === "hole") {
+      this.holePickupCollected = true;
+      this.blackBulletUses = 0;
+    }
+    // ... existing pickup logic ...
+  }
+
+  // Call this at the start of each round
+  onRoundStart() {
+    this.blackBulletUses = 0;
+    this.holePickupCollected = false;
+    this.activeBlackHole = null;
+  }
+
+  // Call this at the end of each round
+  onRoundEnd() {
+    this.activeBlackHole = null;
+    this.groupBlackHole = [];
+    this.groupBlackBullet = [];
+    this.isBlackHoleMode = false;
+  }
+
+  // Stub for firing black bullet
+  fireBlackBullet(x, y, angle) {
+    if (!this.isDarkRound() || !this.holePickupCollected) return;
+    if (this.blackBulletUses >= this.maxBlackBulletUses) return;
+    if (this.isBlackHoleMode) return; // Only one black hole at a time
+    if (gameState.isAngelMode) return; // Block in angel mode
+    this.blackBulletUses++;
+    const blackBulletImg = assetManager.getImage("black-bullet");
+    const blackHoleImg = assetManager.getImage("blackhole");
+    this.groupBlackBullet.push(
+      new BlackBullet(x, y, angle, blackBulletImg, blackHoleImg)
+    );
+  }
+
+  // Call this in the main update loop
+  updateBlackBulletsAndHoles() {
+    // Update BlackBullets
+    for (let i = this.groupBlackBullet.length - 1; i >= 0; i--) {
+      let bullet = this.groupBlackBullet[i];
+      bullet.move();
+      bullet.draw();
+      if (bullet.shouldTransform()) {
+        const blackHole = bullet.transform();
+        this.groupBlackHole.push(blackHole);
+        this.groupBlackBullet.splice(i, 1);
+        this.isBlackHoleMode = true;
+      } else if (bullet.isOffScreen()) {
+        this.groupBlackBullet.splice(i, 1);
+      }
+    }
+    // Update BlackHoles
+    for (let i = this.groupBlackHole.length - 1; i >= 0; i--) {
+      let blackHole = this.groupBlackHole[i];
+      blackHole.draw();
+      // Suck effect: enemies, enemy bullets, player bullets
+      // For shield logic, pass a list of shield givers (darkShield enemies)
+      const shieldGivers = this.groupAlien.filter(
+        (e) => e.type === "darkShield"
+      );
+      blackHole.applySuckEffect(
+        this.groupAlien,
+        this.groupEnemyBullet,
+        this.groupBullet,
+        shieldGivers
+      );
+      if (blackHole.shouldRemove()) {
+        this.groupBlackHole.splice(i, 1);
+        this.isBlackHoleMode = false;
+      }
+    }
+  }
+
+  isDarkRound() {
+    // Example: dark rounds are 60 and above
+    return gameState.currentRound >= 60;
+  }
+
+  // Add this helper method to GameManager
+  clearOrphanedShields() {
+    // Build a set of all current shielders
+    const currentShielders = new Set(
+      this.groupAlien.filter((e) => e && e.type === "darkShield")
+    );
+    for (let enemy of this.groupAlien) {
+      if (
+        enemy &&
+        enemy.isInvulnerable &&
+        enemy.shieldedBy &&
+        !currentShielders.has(enemy.shieldedBy)
+      ) {
+        enemy.isInvulnerable = false;
+        enemy.shieldedBy = null;
+      }
+    }
+  }
+}
+
+// Add a key handler for firing black bullet if hole pickup is collected
+function keyPressed() {
+  if (key === "q" || key === "Q") {
+    if (
+      typeof gameManager !== "undefined" &&
+      gameManager.holePickupCollected &&
+      gameManager.isDarkRound() &&
+      (!gameManager.maxBlackBulletUses ||
+        gameManager.blackBulletUses < gameManager.maxBlackBulletUses)
+    ) {
+      // Fire black bullet from player position and angle
+      const player = gameManager.player;
+      if (player) {
+        const angle = player.rotation || 0;
+        gameManager.fireBlackBullet(player.xPos, player.yPos, angle);
+      }
+    }
   }
 }

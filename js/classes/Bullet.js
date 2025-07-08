@@ -1,3 +1,12 @@
+// Utility for drawing sprites/images with optional rotation
+function drawSprite(img, x, y, size, rotation = 0) {
+  push();
+  translate(x + size / 2, y + size / 2);
+  if (rotation) rotate(rotation);
+  image(img, -size / 2, -size / 2, size, size);
+  pop();
+}
+
 class Bullet {
   constructor(x, y, angle, image) {
     this.xPos = x;
@@ -17,26 +26,13 @@ class Bullet {
   }
 
   draw() {
-    push();
-    translate(this.xPos + this.size / 2, this.yPos + this.size / 2);
-    rotate(atan2(this.directionY, this.directionX) + PI / 2);
-    // Shift lazBulletImage 40px to the left for better alignment
-    if (
-      typeof assetManager !== "undefined" &&
-      (this.image === assetManager.getImage("lazBullet") ||
-        this.image === assetManager.getImage("bullet"))
-    ) {
-      image(
-        this.image,
-        -this.size / 2 - 30,
-        -this.size / 2,
-        this.size,
-        this.size
-      );
-    } else {
-      image(this.image, -this.size / 2, -this.size / 2, this.size, this.size);
-    }
-    pop();
+    drawSprite(
+      this.image,
+      this.xPos,
+      this.yPos,
+      this.size,
+      atan2(this.directionY, this.directionX) + PI / 2
+    );
   }
 
   isOffScreen() {
@@ -48,13 +44,18 @@ class Bullet {
     );
   }
 
-  checkCollision(alien) {
+  static rectsOverlap(a, b) {
     return (
-      this.xPos < alien.xPos + alien.size &&
-      this.xPos + this.size > alien.xPos &&
-      this.yPos < alien.yPos + alien.size &&
-      this.yPos + this.size > alien.yPos
+      a.xPos < b.xPos + b.size &&
+      a.xPos + a.size > b.xPos &&
+      a.yPos < b.yPos + b.size &&
+      a.yPos + a.size > b.yPos
     );
+  }
+
+  checkCollision(player) {
+    if (!player) return false;
+    return Bullet.rectsOverlap(this, player);
   }
 }
 
@@ -86,23 +87,15 @@ class IceBullet {
 
   draw() {
     if (!this.hasExploded) {
-      push();
-      translate(this.xPos + this.size / 2, this.yPos + this.size / 2);
-      rotate(atan2(this.directionY, this.directionX) + PI / 2);
-      image(this.image, -this.size / 2, -this.size / 2, this.size, this.size);
-      pop();
+      drawSprite(this.image, this.xPos, this.yPos, this.size);
     } else {
       // Draw explosion centered on the original bullet position
-      push();
-      translate(this.xPos + this.size / 2, this.yPos + this.size / 2);
-      image(
+      drawSprite(
         this.image,
-        -this.explosionSize / 2,
-        -this.explosionSize / 2,
-        this.explosionSize,
+        this.xPos + (this.size - this.explosionSize) / 2,
+        this.yPos + (this.size - this.explosionSize) / 2,
         this.explosionSize
       );
-      pop();
     }
   }
 
@@ -131,22 +124,23 @@ class IceBullet {
     );
   }
 
+  checkCollision(player) {
+    if (!player) return false;
+    return Bullet.rectsOverlap(this, player);
+  }
+
   checkExplosionCollision(alien) {
     if (!this.hasExploded) return false;
-
     // Calculate explosion center (same as original bullet center)
     let explosionCenterX = this.xPos + this.size / 2;
     let explosionCenterY = this.yPos + this.size / 2;
-
     // Calculate alien center
     let alienCenterX = alien.xPos + alien.size / 2;
     let alienCenterY = alien.yPos + alien.size / 2;
-
     // Check if alien is within explosion radius
     let dx = alienCenterX - explosionCenterX;
     let dy = alienCenterY - explosionCenterY;
     let distance = Math.sqrt(dx * dx + dy * dy);
-
     return distance < this.explosionSize / 2;
   }
 }
@@ -180,7 +174,7 @@ class EnemyIceBullet {
   }
 
   draw() {
-    image(this.image, this.xPos, this.yPos, this.size, this.size);
+    drawSprite(this.image, this.xPos, this.yPos, this.size);
   }
 
   isOffScreen() {
@@ -194,12 +188,7 @@ class EnemyIceBullet {
 
   checkCollision(player) {
     if (!player) return false;
-    return (
-      this.xPos < player.xPos + player.size &&
-      this.xPos + this.size > player.xPos &&
-      this.yPos < player.yPos + player.size &&
-      this.yPos + this.size > player.yPos
-    );
+    return Bullet.rectsOverlap(this, player);
   }
 }
 
@@ -232,7 +221,7 @@ class IceWaveBullet {
   }
 
   draw() {
-    image(this.image, this.xPos, this.yPos, this.size, this.size);
+    drawSprite(this.image, this.xPos, this.yPos, this.size);
   }
 
   isOffScreen() {
@@ -246,12 +235,7 @@ class IceWaveBullet {
 
   checkCollision(player) {
     if (!player) return false;
-    return (
-      this.xPos < player.xPos + player.size &&
-      this.xPos + this.size > player.xPos &&
-      this.yPos < player.yPos + player.size &&
-      this.yPos + this.size > player.yPos
-    );
+    return Bullet.rectsOverlap(this, player);
   }
 }
 
@@ -283,7 +267,7 @@ class EnemyBullet {
   }
 
   draw() {
-    image(this.image, this.xPos, this.yPos, this.size, this.size);
+    drawSprite(this.image, this.xPos, this.yPos, this.size);
   }
 
   isOffScreen() {
@@ -297,12 +281,7 @@ class EnemyBullet {
 
   checkCollision(player) {
     if (!player) return false;
-    return (
-      this.xPos < player.xPos + player.size &&
-      this.xPos + this.size > player.xPos &&
-      this.yPos < player.yPos + player.size &&
-      this.yPos + this.size > player.yPos
-    );
+    return Bullet.rectsOverlap(this, player);
   }
 }
 
@@ -314,21 +293,19 @@ class SawBladeBullet extends Bullet {
   }
 
   draw() {
-    push();
-    translate(this.xPos + this.size / 2, this.yPos + this.size / 2);
-    rotate(atan2(this.directionY, this.directionX) + PI / 2);
-    image(this.image, -this.size / 2, -this.size / 2, this.size, this.size);
-    pop();
+    drawSprite(
+      this.image,
+      this.xPos,
+      this.yPos,
+      this.size,
+      atan2(this.directionY, this.directionX) + PI / 2
+    );
   }
 
   checkCollision(alien) {
-    // Standard AABB collision
-    if (
-      this.xPos < alien.xPos + alien.size &&
-      this.xPos + this.size > alien.xPos &&
-      this.yPos < alien.yPos + alien.size &&
-      this.yPos + this.size > alien.yPos
-    ) {
+    if (!alien) return false;
+    const hit = Bullet.rectsOverlap(this, alien);
+    if (hit) {
       // Bounce: reflect direction
       let centerX = this.xPos + this.size / 2;
       let centerY = this.yPos + this.size / 2;
@@ -342,7 +319,7 @@ class SawBladeBullet extends Bullet {
         this.directionY *= -1; // Bounce vertically
       }
       this.bounces++;
-      return true; // Still counts as a hit
+      return true;
     }
     return false;
   }
@@ -381,7 +358,7 @@ class FireBullet {
   }
 
   draw() {
-    image(this.image, this.xPos, this.yPos, this.size, this.size);
+    drawSprite(this.image, this.xPos, this.yPos, this.size);
   }
 
   isOffScreen() {
@@ -395,12 +372,7 @@ class FireBullet {
 
   checkCollision(player) {
     if (!player) return false;
-    return (
-      this.xPos < player.xPos + player.size &&
-      this.xPos + this.size > player.xPos &&
-      this.yPos < player.yPos + player.size &&
-      this.yPos + this.size > player.yPos
-    );
+    return Bullet.rectsOverlap(this, player);
   }
 }
 
@@ -446,7 +418,7 @@ class RocketBullet {
   }
 
   draw() {
-    image(this.image, this.xPos, this.yPos, this.size, this.size);
+    drawSprite(this.image, this.xPos, this.yPos, this.size);
   }
 
   isOffScreen() {
@@ -460,12 +432,7 @@ class RocketBullet {
 
   checkCollision(player) {
     if (!player || this.isAttached) return false;
-    return (
-      this.xPos < player.xPos + player.size &&
-      this.xPos + this.size > player.xPos &&
-      this.yPos < player.yPos + player.size &&
-      this.yPos + this.size > player.yPos
-    );
+    return Bullet.rectsOverlap(this, player);
   }
 
   attachToPlayer(player) {
@@ -545,7 +512,7 @@ class ToxicBullet {
   }
 
   draw() {
-    image(this.image, this.xPos, this.yPos, this.size, this.size);
+    drawSprite(this.image, this.xPos, this.yPos, this.size);
   }
 
   isOffScreen() {
@@ -559,44 +526,28 @@ class ToxicBullet {
 
   checkCollision(player) {
     if (!player) return false;
-    return (
-      this.xPos < player.xPos + player.size &&
-      this.xPos + this.size > player.xPos &&
-      this.yPos < player.yPos + player.size &&
-      this.yPos + this.size > player.yPos
-    );
+    return Bullet.rectsOverlap(this, player);
   }
 }
 
 class ToxicGasBullet {
-  constructor(x, y, targetX, targetY, canImage, exploImage) {
+  constructor(x, y, angle, canImage, exploImage) {
     this.xPos = x;
     this.yPos = y;
     this.canImage = canImage;
     this.exploImage = exploImage;
     this.speed = GAME_CONFIG.TOXIC_BULLET_SPEED;
     this.size = GAME_CONFIG.BULLET_SIZE;
+    this.creationTime = millis();
+    this.lifeTime = 3000; // 3 seconds flying
     this.hasExploded = false;
     this.explosionSize = GAME_CONFIG.TOXIC_GAS_EXPLOSION_SIZE;
     this.explosionStartTime = 0;
     this.explosionDuration = 2000; // 2 seconds linger
-    this.damage = 10; // 10 damage per second
-    this.creationTime = millis();
-    this.lifeTime = 900; // ms before explosion
+    this.damageTickInterval = 100;
     this.lastDamageTick = 0;
-    this.damageTickInterval = 100; // 1 damage every 100ms (10/sec)
-
-    // Calculate direction to player
-    let dx = targetX - x;
-    let dy = targetY - y;
-    let distance = Math.sqrt(dx * dx + dy * dy);
-    if (distance === 0) {
-      this.directionX = 0;
-      this.directionY = 1;
-    } else {
-      this.directionX = dx / distance;
-      this.directionY = dy / distance;
-    }
+    this.directionX = cos(angle - PI / 2);
+    this.directionY = sin(angle - PI / 2);
   }
 
   move() {
@@ -608,20 +559,31 @@ class ToxicGasBullet {
 
   draw() {
     if (!this.hasExploded) {
-      image(this.canImage, this.xPos, this.yPos, this.size, this.size);
+      // Draw canister
+      drawSprite(this.canImage, this.xPos, this.yPos, this.size);
     } else {
-      // Draw lingering gas cloud
-      push();
-      translate(this.xPos + this.size / 2, this.yPos + this.size / 2);
-      image(
-        this.exploImage,
-        -this.explosionSize / 2,
-        -this.explosionSize / 2,
-        this.explosionSize,
-        this.explosionSize
-      );
-      pop();
+      // Draw gas cloud
+      drawSprite(this.exploImage, this.xPos, this.yPos, this.explosionSize);
     }
+  }
+
+  shouldExplode() {
+    return (
+      (millis() - this.creationTime >= this.lifeTime || this.isOffScreen()) &&
+      !this.hasExploded
+    );
+  }
+
+  explode() {
+    this.hasExploded = true;
+    this.explosionStartTime = millis();
+  }
+
+  shouldRemove() {
+    return (
+      this.hasExploded &&
+      millis() - this.explosionStartTime >= this.explosionDuration
+    );
   }
 
   isOffScreen() {
@@ -630,23 +592,6 @@ class ToxicGasBullet {
       this.xPos > width + 100 ||
       this.yPos < -100 ||
       this.yPos > height + 100
-    );
-  }
-
-  shouldExplode() {
-    return millis() - this.creationTime >= this.lifeTime && !this.hasExploded;
-  }
-
-  explode() {
-    this.hasExploded = true;
-    this.explosionStartTime = millis();
-    this.lastDamageTick = millis();
-  }
-
-  shouldRemove() {
-    return (
-      this.hasExploded &&
-      millis() - this.explosionStartTime >= this.explosionDuration
     );
   }
 
@@ -720,7 +665,7 @@ class DarkBullet {
   }
 
   draw() {
-    image(this.image, this.xPos, this.yPos, this.size, this.size);
+    drawSprite(this.image, this.xPos, this.yPos, this.size);
   }
 
   isOffScreen() {
@@ -734,12 +679,7 @@ class DarkBullet {
 
   checkCollision(player) {
     if (!player) return false;
-    return (
-      this.xPos < player.xPos + player.size &&
-      this.xPos + this.size > player.xPos &&
-      this.yPos < player.yPos + player.size &&
-      this.yPos + this.size > player.yPos
-    );
+    return Bullet.rectsOverlap(this, player);
   }
 }
 
@@ -748,8 +688,8 @@ class DarkMultiBullet {
     this.xPos = x;
     this.yPos = y;
     this.image = image;
-    this.speed = GAME_CONFIG.DARK_BULLET_SPEED;
-    this.size = GAME_CONFIG.BULLET_SIZE;
+    this.speed = 12; // Extremely fast
+    this.size = GAME_CONFIG.BULLET_SIZE / 2;
     this.damage = GAME_CONFIG.DARK_BULLET_DAMAGE;
     this.spacing = GAME_CONFIG.DARK_LASER_SPACING;
 
@@ -772,29 +712,24 @@ class DarkMultiBullet {
   }
 
   draw() {
-    // Draw 3 lasers: center, left, and right
-    // Center laser (rotated)
-    push();
-    translate(this.xPos + this.size / 2, this.yPos + this.size / 2);
-    rotate(atan2(this.directionY, this.directionX) + PI / 2);
-    image(this.image, -this.size / 2, -this.size / 2, this.size, this.size);
-    pop();
-
-    // Left laser (not rotated)
-    image(
+    // Draw 3 lasers: center, left, and right, using perpendicular offset
+    let spacing = (this.spacing + 6) * 1.5; // Increase offset for more separation
+    let perpX = -this.directionY;
+    let perpY = this.directionX;
+    // Center laser
+    drawSprite(this.image, this.xPos, this.yPos, this.size);
+    // Left laser
+    drawSprite(
       this.image,
-      this.xPos - this.spacing,
-      this.yPos,
-      this.size,
+      this.xPos + perpX * spacing,
+      this.yPos + perpY * spacing,
       this.size
     );
-
-    // Right laser (not rotated)
-    image(
+    // Right laser
+    drawSprite(
       this.image,
-      this.xPos + this.spacing,
-      this.yPos,
-      this.size,
+      this.xPos - perpX * spacing,
+      this.yPos - perpY * spacing,
       this.size
     );
   }
@@ -810,26 +745,174 @@ class DarkMultiBullet {
 
   checkCollision(player) {
     if (!player) return false;
+    // Calculate perpendicular offset for left/right lasers
+    let spacing = (this.spacing + 6) * 1.5;
+    let perpX = -this.directionY;
+    let perpY = this.directionX;
+    // Center laser
+    let centerRect = { xPos: this.xPos, yPos: this.yPos, size: this.size };
+    // Left laser
+    let leftRect = {
+      xPos: this.xPos + perpX * spacing,
+      yPos: this.yPos + perpY * spacing,
+      size: this.size,
+    };
+    // Right laser
+    let rightRect = {
+      xPos: this.xPos - perpX * spacing,
+      yPos: this.yPos - perpY * spacing,
+      size: this.size,
+    };
+    return (
+      Bullet.rectsOverlap(centerRect, player) ||
+      Bullet.rectsOverlap(leftRect, player) ||
+      Bullet.rectsOverlap(rightRect, player)
+    );
+  }
+}
 
-    // Check collision for all 3 lasers
-    let centerCollision =
-      this.xPos < player.xPos + player.size &&
-      this.xPos + this.size > player.xPos &&
-      this.yPos < player.yPos + player.size &&
-      this.yPos + this.size > player.yPos;
+class BlackBullet {
+  constructor(x, y, angle, image, blackholeImage) {
+    this.xPos = x;
+    this.yPos = y;
+    this.image = image;
+    this.blackholeImage = blackholeImage;
+    this.speed = GAME_CONFIG.BULLET_SPEED;
+    this.size = GAME_CONFIG.BULLET_SIZE;
+    this.creationTime = millis();
+    this.lifeTime = 2000; // 2 seconds before turning into black hole
+    this.hasTransformed = false;
+    this.angle = angle;
+    this.directionX = cos(angle - PI / 2);
+    this.directionY = sin(angle - PI / 2);
+  }
 
-    let leftCollision =
-      this.xPos - this.spacing < player.xPos + player.size &&
-      this.xPos - this.spacing + this.size > player.xPos &&
-      this.yPos < player.yPos + player.size &&
-      this.yPos + this.size > player.yPos;
+  move() {
+    if (!this.hasTransformed) {
+      this.xPos += this.directionX * this.speed;
+      this.yPos += this.directionY * this.speed;
+    }
+  }
 
-    let rightCollision =
-      this.xPos + this.spacing < player.xPos + player.size &&
-      this.xPos + this.spacing + this.size > player.xPos &&
-      this.yPos < player.yPos + player.size &&
-      this.yPos + this.size > player.yPos;
+  draw() {
+    if (!this.hasTransformed) {
+      drawSprite(this.image, this.xPos, this.yPos, this.size);
+    }
+  }
 
-    return centerCollision || leftCollision || rightCollision;
+  shouldTransform() {
+    return (
+      millis() - this.creationTime >= this.lifeTime && !this.hasTransformed
+    );
+  }
+
+  transform() {
+    this.hasTransformed = true;
+    // Return a new BlackHole at this position
+    return new BlackHole(this.xPos, this.yPos, this.blackholeImage);
+  }
+
+  isOffScreen() {
+    return (
+      this.xPos < -100 ||
+      this.xPos > width + 100 ||
+      this.yPos < -100 ||
+      this.yPos > height + 100
+    );
+  }
+}
+
+class BlackHole {
+  constructor(x, y, image) {
+    this.xPos = x;
+    this.yPos = y;
+    this.image = image;
+    this.size = GAME_CONFIG.BULLET_SIZE * 4; // Large black hole
+    this.creationTime = millis();
+    this.duration = 3000; // 3 seconds
+    this.active = true;
+    this.suckRadius = this.size * 2; // Area of effect
+    this.suckStrength = 8; // Pixels per frame towards center
+  }
+
+  draw() {
+    if (this.active) {
+      drawSprite(this.image, this.xPos, this.yPos, this.size);
+    }
+  }
+
+  shouldRemove() {
+    return millis() - this.creationTime >= this.duration;
+  }
+
+  // Suck in enemies and bullets (except player)
+  applySuckEffect(enemies, enemyBullets, playerBullets, shieldLinks) {
+    const centerX = this.xPos + this.size / 2;
+    const centerY = this.yPos + this.size / 2;
+    // Suck in enemies
+    for (let i = enemies.length - 1; i >= 0; i--) {
+      let enemy = enemies[i];
+      if (!enemy) continue;
+      // Check shield logic
+      if (enemy.isInvulnerable && shieldLinks) {
+        // Only remove if shield giver is gone (handled outside)
+        continue;
+      }
+      // Pull enemy towards center
+      let ex = enemy.xPos + enemy.size / 2;
+      let ey = enemy.yPos + enemy.size / 2;
+      let dx = centerX - ex;
+      let dy = centerY - ey;
+      let dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < this.suckRadius) {
+        // Move enemy towards center
+        let pullX = (dx / dist) * Math.min(this.suckStrength, dist);
+        let pullY = (dy / dist) * Math.min(this.suckStrength, dist);
+        enemy.xPos += pullX;
+        enemy.yPos += pullY;
+        // Remove if close enough
+        if (dist < this.size / 2) {
+          enemies.splice(i, 1);
+        }
+      }
+    }
+    // Suck in enemy bullets
+    for (let i = enemyBullets.length - 1; i >= 0; i--) {
+      let bullet = enemyBullets[i];
+      if (!bullet) continue;
+      let bx = bullet.xPos + (bullet.size ? bullet.size / 2 : 0);
+      let by = bullet.yPos + (bullet.size ? bullet.size / 2 : 0);
+      let dx = centerX - bx;
+      let dy = centerY - by;
+      let dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < this.suckRadius) {
+        let pullX = (dx / dist) * Math.min(this.suckStrength, dist);
+        let pullY = (dy / dist) * Math.min(this.suckStrength, dist);
+        bullet.xPos += pullX;
+        bullet.yPos += pullY;
+        if (dist < this.size / 2) {
+          enemyBullets.splice(i, 1);
+        }
+      }
+    }
+    // Suck in player bullets
+    for (let i = playerBullets.length - 1; i >= 0; i--) {
+      let bullet = playerBullets[i];
+      if (!bullet) continue;
+      let bx = bullet.xPos + (bullet.size ? bullet.size / 2 : 0);
+      let by = bullet.yPos + (bullet.size ? bullet.size / 2 : 0);
+      let dx = centerX - bx;
+      let dy = centerY - by;
+      let dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < this.suckRadius) {
+        let pullX = (dx / dist) * Math.min(this.suckStrength, dist);
+        let pullY = (dy / dist) * Math.min(this.suckStrength, dist);
+        bullet.xPos += pullX;
+        bullet.yPos += pullY;
+        if (dist < this.size / 2) {
+          playerBullets.splice(i, 1);
+        }
+      }
+    }
   }
 }
