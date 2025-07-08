@@ -1,3 +1,10 @@
+// === IMPORTANT: DO NOT CHANGE THIS ROTATION/HEAD LOGIC ===
+  // This is the optimized, proven way to handle ship rotation and firing direction for this game.
+  // Any attempts to "simplify" or "refactor" this logic have historically introduced bugs,
+  // such as bullets/flames not being visually stuck to the ship's nose or being offset.
+  // Always use this approach for updateRotation and related math.
+  // If you think you need to change this, STOP and consult with the project owner first.
+
 class Player {
   constructor(x, y, image) {
     this.xPos = x;
