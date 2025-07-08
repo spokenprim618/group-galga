@@ -43,7 +43,6 @@ class AssetManager {
       this.images.sawBlade = loadImage(IMAGE_PATHS.SAW_BLADE);
       this.images.shield = loadImage(IMAGE_PATHS.SHIELD);
       this.images.speed = loadImage(IMAGE_PATHS.SPEED);
-      this.images.hole = loadImage(IMAGE_PATHS.HOLE);
 
       // Fire enemies
       this.images.fireDrone = loadImage(IMAGE_PATHS.FIRE_DRONE);
@@ -222,8 +221,6 @@ class AssetManager {
       repair: "repair",
       shield: "shield",
       speed: "speed",
-      hole: "hole",
-      "hole-pickup": "hole",
       // New enemies
       dark1Beam: "dark1Beam",
       dark2Shield: "dark2Shield",

@@ -12,7 +12,6 @@ class WeaponSystem {
         } else if (gameState.isLaserMode) {
           this.fireLaserBullets(bulletSpawnPos.x, bulletSpawnPos.y);
         } else {
-          // Dark mode (hole) uses regular bullets for left click
           this.fireRegularBullet(bulletSpawnPos.x, bulletSpawnPos.y);
         }
         gameState.lastShotTime = currentTime;
@@ -20,18 +19,7 @@ class WeaponSystem {
     }
   }
 
-  // Add a static method to handle Q key for black bullet in dark mode
-  static handleSpecialBulletKey(key) {
-    if ((key === "Q" || key === "q") && gameState.isHoleMode) {
-      // Only fire black bullet if in dark mode (hole)
-      let bulletSpawnPos = gameManager.player.getBulletSpawnPosition();
-      gameManager.fireBlackBullet(
-        bulletSpawnPos.x,
-        bulletSpawnPos.y,
-        gameManager.player.rotation
-      );
-    }
-  }
+  // Remove special bullet key for dark/hole mode
 
   static fireRegularBullet(x, y) {
     let bullet = new Bullet(

@@ -116,7 +116,7 @@ const GAME_CONFIG = {
 // All changes must be reviewed before merging.
 // ===========================
 // Modes with special firing modes (but use regular bullets as base):
-//   - hole (dark), fire, ice
+//   - fire, ice
 // Modes that override the base bullet (replace regular bullet):
 //   - scrap (uses saw blade as base bullet), laz, angel
 // Modes with no special firing mode (use regular bullets):
@@ -127,7 +127,7 @@ const GAME_CONFIG = {
 //
 // Only one main mode can be active at a time. Status pickups are always allowed.
 
-const MODES_WITH_SPECIAL_FIRING_MODE = ["hole", "fire", "ice"];
+const MODES_WITH_SPECIAL_FIRING_MODE = ["fire", "ice"];
 const MODES_WITH_BULLET_OVERRIDE = ["scrap", "laz", "angel"];
 const MODES_WITH_NO_SPECIAL_FIRING_MODE = [];
 
@@ -165,7 +165,6 @@ const IMAGE_PATHS = {
   REPAIR: "images/pick-ups/repair (1).png",
   SHIELD: "images/pick-ups/shield.png",
   SPEED: "images/pick-ups/speed.png",
-  HOLE: "images/pick-ups/hole-pickup.png",
 
   // Fire enemies
   FIRE_DRONE: "images/enemies/fire/fire2-drone.png",

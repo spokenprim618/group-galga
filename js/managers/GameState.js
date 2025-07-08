@@ -135,37 +135,35 @@ class GameState {
       return;
     }
 
-    // Only one main mode at a time (fire, ice, laz, scrap, hole, angel)
-    const MAIN_MODE_TYPES = [
-      "fire-up",
-      "ice-up",
-      "laz-up",
-      "scrap",
-      "hole",
-      "angel",
-    ];
+    // Only one main mode at a time (fire, ice, laz, scrap, angel)
+    const MAIN_MODE_TYPES = ["fire-up", "ice-up", "laz-up", "scrap", "angel"];
     if (MAIN_MODE_TYPES.includes(type)) {
       if (this.isAnyModeActive) return; // Don't switch if a mode is already active
       this.isAnyModeActive = true;
     }
     switch (type) {
       case "fire-up":
+        console.log("Fire mode activated");
         this.isFireMode = true;
         this.fireModeStartTime = millis();
         break;
       case "ice-up":
+        console.log("Ice mode activated");
         this.isIceMode = true;
         this.iceModeStartTime = millis();
         break;
       case "laz-up":
+        console.log("Laser mode activated");
         this.isLaserMode = true;
         this.laserModeStartTime = millis();
         break;
       case "scrap":
+        console.log("Scrap mode activated");
         this.isScrapMode = true;
         this.scrapModeStartTime = millis();
         break;
       case "speed":
+        console.log("Speed mode activated");
         this.isSpeedMode = true;
         this.speedModeStartTime = millis();
         break;
@@ -184,8 +182,13 @@ class GameState {
           this.shields++;
         }
         break;
+      case "black_bullet":
+        console.log("Black bullet powerup activated (2 uses)");
+        this.blackBulletUses = 2;
+        break;
     }
     if (typeof gameManager !== "undefined" && gameManager.player) {
+      // Remove setResistancesForPowerup for 'hole' or 'dark'
       gameManager.player.setResistancesForPowerup(type);
     }
   }

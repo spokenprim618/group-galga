@@ -38,27 +38,15 @@ class Pickup {
     );
   }
 
-  static getPickupTypes({ includeLife = true, doubleHole } = {}) {
-    // Auto-detect doubleHole if not provided
-    if (doubleHole === undefined) {
-      doubleHole =
-        typeof gameManager !== "undefined" &&
-        gameManager.isDarkRound &&
-        gameManager.isDarkRound();
-    }
+  static getPickupTypes({ includeLife = true } = {}) {
     let types = [];
-    if (doubleHole) {
-      types.push("hole", "hole"); // double chance in dark rounds
-    } else {
-      types.push("hole");
-    }
     types.push("fire-up", "ice-up", "laz-up", "scrap");
     if (includeLife) types.push("life");
     types.push("repair", "shield", "speed");
     return types;
   }
 
-  static getPickupTypesWithoutLife(doubleHole) {
-    return this.getPickupTypes({ includeLife: false, doubleHole });
+  static getPickupTypesWithoutLife() {
+    return this.getPickupTypes({ includeLife: false });
   }
 }
