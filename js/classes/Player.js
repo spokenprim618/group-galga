@@ -27,9 +27,14 @@ class Player {
   }
 
   draw() {
-    // Pass the top-left position without adding size/2 here
-    drawSprite(this.image, this.xPos, this.yPos, this.size, this.rotation);
-  }
+    // do not mess with this drawSprite function
+    drawSprite(
+      this.image,
+      this.xPos + this.size / 2,
+      this.yPos + this.size / 2,
+      this.size,
+      this.rotation
+    );  }
 
   getBulletSpawnPosition() {
     // Remove extra +PI/2, use this.rotation directly
