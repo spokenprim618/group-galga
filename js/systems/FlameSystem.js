@@ -1,3 +1,10 @@
+// ===========================
+// PERMISSION REQUIRED TO MODIFY BELOW
+// This file controls the flame/fire system logic.
+// Consequences: Changing this may break fire system behavior or its integration with player logic.
+// All changes must be reviewed before merging.
+// ===========================
+
 class FlameSystem {
   static checkFlameConeCollision(x, y, layers) {
     if (!gameManager.player) return;

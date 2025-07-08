@@ -1,3 +1,9 @@
+// ===========================
+// PERMISSION REQUIRED TO MODIFY BELOW
+// This section controls mode flag/activation logic.
+// Consequences: Changing this may break mode exclusivity or allow mode conflicts.
+// All changes must be reviewed before merging.
+// ===========================
 class GameState {
   constructor() {
     this.state = GAME_CONFIG.STATES.TITLE;

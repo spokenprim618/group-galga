@@ -1,3 +1,9 @@
+// ===========================
+// PERMISSION REQUIRED TO MODIFY BELOW
+// This file controls asset loading/management logic.
+// Consequences: Changing this may break game visuals or sounds.
+// All changes must be reviewed before merging.
+// ===========================
 class AssetManager {
   constructor() {
     this.images = {};

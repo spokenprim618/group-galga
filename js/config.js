@@ -109,7 +109,12 @@ const GAME_CONFIG = {
   DARK_CONNECTOR_WIDTH: 3, // Width of connector lines
 };
 
-// === MODE AND PICKUP CLASSIFICATION FOR FUTURE REFERENCE ===
+// ===========================
+// PERMISSION REQUIRED TO MODIFY BELOW
+// This section controls mode classification logic.
+// Consequences: Changing this may break mode handling or allow mode conflicts.
+// All changes must be reviewed before merging.
+// ===========================
 // Modes with special firing modes (but use regular bullets as base):
 //   - hole (dark), fire, ice
 // Modes that override the base bullet (replace regular bullet):
