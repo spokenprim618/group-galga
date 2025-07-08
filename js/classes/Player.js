@@ -35,21 +35,21 @@ class Player {
       this.size,
       this.rotation
     );  }
-
-  getBulletSpawnPosition() {
-    // Remove extra +PI/2, use this.rotation directly
-    let spawnX = this.xPos + this.size / 2 + 25 * cos(this.rotation);
-    let spawnY = this.yPos + this.size / 2 + 25 * sin(this.rotation);
-    return { x: spawnX, y: spawnY };
-  }
-
-  getFrontPosition() {
-    // This method is currently unused or approximate,
-    // consider updating it to return rotated front if needed
-    let frontX = this.xPos;
-    let frontY = this.yPos;
-    return { x: frontX, y: frontY };
-  }
+//do not mess with this getBulletSpawnPosition function
+    getBulletSpawnPosition() {
+      // Restore +PI/2 offset so front points up if sprite is oriented that way
+      let angle = this.rotation + PI / 2;
+      let spawnX = this.xPos + this.size / 2 + 25 * cos(angle);
+      let spawnY = this.yPos + this.size / 2 + 25 * sin(angle);
+      return { x: spawnX, y: spawnY };
+    }
+  //do not mess with this getFrontPosition function
+    getFrontPosition() {
+      // Calculate the actual front position after rotation
+      let frontX = this.xPos; // Left edge of ship
+      let frontY = this.yPos; // Top of ship
+      return { x: frontX, y: frontY };
+    }
 
   move(direction) {
     let currentSpeed = GAME_CONFIG.PLAYER_SPEED;
