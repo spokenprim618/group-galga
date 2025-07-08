@@ -112,13 +112,22 @@ class Bullet {
   }
 
   draw() {
-    drawSprite(
-      this.image,
-      this.xPos + this.size / 2,
-      this.yPos + this.size / 2,
-      this.size,
-      atan2(this.directionY, this.directionX) + PI / 2
-    );
+    push();
+    translate(this.xPos + this.size / 2, this.yPos + this.size / 2);
+    rotate(atan2(this.directionY, this.directionX) + PI / 2);
+    // Shift lazBulletImage 40px to the left for better alignment
+    if (this.image === lazBulletImage || this.image === bulletImage) {
+      image(
+        this.image,
+        -this.size / 2 - 30,
+        -this.size / 2,
+        this.size,
+        this.size
+      );
+    } else {
+      image(this.image, -this.size / 2, -this.size / 2, this.size, this.size);
+    }
+    pop();
   }
 
   isOffScreen() {
@@ -168,22 +177,23 @@ class IceBullet {
 
   draw() {
     if (!this.hasExploded) {
-      drawSprite(
-        this.image,
-        this.xPos + this.size / 2,
-        this.yPos + this.size / 2,
-        this.size,
-        atan2(this.directionY, this.directionX) + PI / 2
-      );
+      push();
+      translate(this.xPos + this.size / 2, this.yPos + this.size / 2);
+      rotate(atan2(this.directionY, this.directionX) + PI / 2);
+      image(this.image, -this.size / 2, -this.size / 2, this.size, this.size);
+      pop();
     } else {
       // Draw explosion centered on the original bullet position
-      drawSprite(
+      push();
+      translate(this.xPos + this.size / 2, this.yPos + this.size / 2);
+      image(
         this.image,
-        this.xPos + this.size / 2,
-        this.yPos + this.size / 2,
+        -this.explosionSize / 2,
+        -this.explosionSize / 2,
         this.explosionSize,
-        0
+        this.explosionSize
       );
+      pop();
     }
   }
 
@@ -250,13 +260,11 @@ class Player {
   }
 
   draw() {
-    drawSprite(
-      this.image,
-      this.xPos + this.size / 2,
-      this.yPos + this.size / 2,
-      this.size,
-      this.rotation
-    );
+    push(); // Save the current transformation state
+    translate(this.xPos + this.size / 2, this.yPos + this.size / 2); // Move to center of player
+    rotate(this.rotation); // Rotate
+    image(this.image, -this.size / 2, -this.size / 2, this.size, this.size); // Draw centered
+    pop(); // Restore the previous transformation state
   }
 
   getNosePosition() {
@@ -377,7 +385,7 @@ class Pickup {
   }
 
   draw() {
-    drawSprite(this.image, this.xPos, this.yPos, this.size);
+    image(this.image, this.xPos, this.yPos, this.size, this.size);
   }
 
   isOffScreen() {
@@ -410,13 +418,11 @@ class SawBladeBullet extends Bullet {
 
   // Override draw if you want a different look (optional)
   draw() {
-    drawSprite(
-      this.image,
-      this.xPos + this.size / 2,
-      this.yPos + this.size / 2,
-      this.size,
-      atan2(this.directionY, this.directionX) + PI / 2
-    );
+    push();
+    translate(this.xPos + this.size / 2, this.yPos + this.size / 2);
+    rotate(atan2(this.directionY, this.directionX) + PI / 2);
+    image(this.image, -this.size / 2, -this.size / 2, this.size, this.size);
+    pop();
   }
 
   // Override collision with alien: bounce instead of remove
@@ -574,13 +580,7 @@ function applyPickupEffect(type) {
       laserModeStartTime = 0;
       isScrapMode = false;
       scrapModeStartTime = 0;
-      drawSprite(
-        fire2Image,
-        player.xPos + player.size / 2,
-        player.yPos + player.size / 2,
-        player.size,
-        player.rotation
-      );
+      player.image = fire2Image;
       isFireMode = true;
       fireModeStartTime = millis();
       break;
@@ -591,13 +591,7 @@ function applyPickupEffect(type) {
       laserModeStartTime = 0;
       isScrapMode = false;
       scrapModeStartTime = 0;
-      drawSprite(
-        ice2Image,
-        player.xPos + player.size / 2,
-        player.yPos + player.size / 2,
-        player.size,
-        player.rotation
-      );
+      player.image = ice2Image;
       isIceMode = true;
       iceModeStartTime = millis();
       break;
@@ -608,13 +602,7 @@ function applyPickupEffect(type) {
       iceModeStartTime = 0;
       isScrapMode = false;
       scrapModeStartTime = 0;
-      drawSprite(
-        playerImage,
-        player.xPos + player.size / 2,
-        player.yPos + player.size / 2,
-        player.size,
-        player.rotation
-      );
+      player.image = playerImage;
       isLaserMode = true;
       laserModeStartTime = millis();
       break;
@@ -625,13 +613,7 @@ function applyPickupEffect(type) {
       iceModeStartTime = 0;
       isLaserMode = false;
       laserModeStartTime = 0;
-      drawSprite(
-        scrapShipImage,
-        player.xPos + player.size / 2,
-        player.yPos + player.size / 2,
-        player.size,
-        player.rotation
-      );
+      player.image = scrapShipImage;
       isScrapMode = true;
       scrapModeStartTime = millis();
       break;
@@ -673,18 +655,54 @@ function draw() {
     let startX = width / 2 - 5.5 * spriteSize;
 
     // Draw all available images in a row
-    drawSprite(angelImage, startX + 0 * spriteSize, spriteY, spriteSize);
-    drawSprite(fireUpImage, startX + 1 * spriteSize, spriteY, spriteSize);
-    drawSprite(fire2Image, startX + 2 * spriteSize, spriteY, spriteSize);
-    drawSprite(iceUpImage, startX + 3 * spriteSize, spriteY, spriteSize);
-    drawSprite(ice2Image, startX + 4 * spriteSize, spriteY, spriteSize);
-    drawSprite(player1Image, startX + 5 * spriteSize, spriteY, spriteSize);
-    drawSprite(repairImage, startX + 6 * spriteSize, spriteY, spriteSize);
-    drawSprite(lifeImage, startX + 7 * spriteSize, spriteY, spriteSize);
-    drawSprite(playerImage, startX + 8 * spriteSize, spriteY, spriteSize);
-    drawSprite(enemyImage, startX + 9 * spriteSize, spriteY, spriteSize);
-    drawSprite(bulletImage, startX + 10 * spriteSize, spriteY, spriteSize);
-    drawSprite(enemyBulletImage, startX + 11 * spriteSize, spriteY, spriteSize);
+    image(angelImage, startX + 0 * spriteSize, spriteY, spriteSize, spriteSize);
+    image(
+      fireUpImage,
+      startX + 1 * spriteSize,
+      spriteY,
+      spriteSize,
+      spriteSize
+    );
+    image(fire2Image, startX + 2 * spriteSize, spriteY, spriteSize, spriteSize);
+    image(iceUpImage, startX + 3 * spriteSize, spriteY, spriteSize, spriteSize);
+    image(ice2Image, startX + 4 * spriteSize, spriteY, spriteSize, spriteSize);
+    image(
+      player1Image,
+      startX + 5 * spriteSize,
+      spriteY,
+      spriteSize,
+      spriteSize
+    );
+    image(
+      repairImage,
+      startX + 6 * spriteSize,
+      spriteY,
+      spriteSize,
+      spriteSize
+    );
+    image(lifeImage, startX + 7 * spriteSize, spriteY, spriteSize, spriteSize);
+    image(
+      playerImage,
+      startX + 8 * spriteSize,
+      spriteY,
+      spriteSize,
+      spriteSize
+    );
+    image(enemyImage, startX + 9 * spriteSize, spriteY, spriteSize, spriteSize);
+    image(
+      bulletImage,
+      startX + 10 * spriteSize,
+      spriteY,
+      spriteSize,
+      spriteSize
+    );
+    image(
+      enemyBulletImage,
+      startX + 11 * spriteSize,
+      spriteY,
+      spriteSize,
+      spriteSize
+    );
 
     // Draw the player with fixed rotation
     if (player) {

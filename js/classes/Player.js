@@ -9,39 +9,33 @@ class Player {
 
   updateRotation() {
     // Calculate angle between center of ship and mouse
-    let dx = mouseX - (this.xPos + this.size / 2)-26;
+    let dx = mouseX - (this.xPos + this.size / 2) - 26;
     let dy = mouseY - (this.yPos + this.size / 2);
     // Restore +PI/2 offset so nose points up if sprite is oriented that way
     this.rotation = atan2(dy, dx) + PI / 2;
   }
 
   draw() {
-    drawSprite(
-      this.image,
-      this.xPos + this.size / 2,
-      this.yPos + this.size / 2,
-      this.size,
-      this.rotation
-    );
+    // Pass the top-left position without adding size/2 here
+    drawSprite(this.image, this.xPos, this.yPos, this.size, this.rotation);
   }
 
   getBulletSpawnPosition() {
-    // Restore +PI/2 offset so front points up if sprite is oriented that way
-    let angle = this.rotation + PI / 2;
-    let spawnX = this.xPos + this.size / 2 + 25 * cos(angle);
-    let spawnY = this.yPos + this.size / 2 + 25 * sin(angle);
+    // Remove extra +PI/2, use this.rotation directly
+    let spawnX = this.xPos + this.size / 2 + 25 * cos(this.rotation);
+    let spawnY = this.yPos + this.size / 2 + 25 * sin(this.rotation);
     return { x: spawnX, y: spawnY };
   }
 
   getFrontPosition() {
-    // Calculate the actual front position after rotation
-    let frontX = this.xPos; // Left edge of ship
-    let frontY = this.yPos; // Top of ship
+    // This method is currently unused or approximate,
+    // consider updating it to return rotated front if needed
+    let frontX = this.xPos;
+    let frontY = this.yPos;
     return { x: frontX, y: frontY };
   }
 
   move(direction) {
-    // Calculate current speed based on speed mode
     let currentSpeed = GAME_CONFIG.PLAYER_SPEED;
     if (gameState && gameState.isSpeedMode) {
       currentSpeed = GAME_CONFIG.PLAYER_SPEED * GAME_CONFIG.PLAYER_SPEED_BOOST;
@@ -68,17 +62,6 @@ class Player {
   }
 
   takeDamage(damage) {
-    // This method is called by enemies to damage the player
-    // The actual damage handling is done in GameManager
-    // This method exists for compatibility with enemy damage calls
     console.log("Player taking damage:", damage);
   }
-}
-
-function drawSprite(img, x, y, size, rotation = 0) {
-  push();
-  translate(x + size / 2, y + size / 2);
-  if (rotation) rotate(rotation);
-  image(img, -size / 2, -size / 2, size, size);
-  pop();
 }

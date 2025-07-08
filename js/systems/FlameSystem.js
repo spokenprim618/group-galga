@@ -1,61 +1,56 @@
 class FlameSystem {
   static checkFlameConeCollision(x, y, layers) {
-    // Safety check: ensure player exists
     if (!gameManager.player) return;
 
-    let flameSpacing = 15; // horizontal spacing between flames
-    let layerSpacing = 20; // vertical spacing between rows
+    let flameSpacing = 15;
+    let layerSpacing = 20;
+    let rotation = gameManager.player.rotation;
 
     for (let i = 0; i < layers; i++) {
-      let numFlames = 1 + i; // 1 → 2 → 3 → 4 ...
+      let numFlames = 1 + i;
       for (let j = 0; j < numFlames; j++) {
-        // Center flames
         let offsetX = (j - (numFlames - 1) / 2) * flameSpacing;
         let offsetY = -i * layerSpacing;
 
-        // Calculate flame position in world coordinates (no rotation)
-        let flameX = x + offsetX;
-        let flameY = y + offsetY;
-        let size = 20 + gameState.currentFrame * 2; // Size varies from 20 to 28
+        // ROTATED flame position (corrected)
+        let flameX =
+          x + offsetX * Math.cos(rotation) - offsetY * Math.sin(rotation);
+        let flameY =
+          y + offsetX * Math.sin(rotation) + offsetY * Math.cos(rotation);
+        let size = 20 + gameState.currentFrame * 2;
 
-        // Check collision with aliens
+        // Alien collision
         for (let k = gameManager.groupAlien.length - 1; k >= 0; k--) {
           if (gameManager.groupAlien[k]) {
-            let alienX = gameManager.groupAlien[k].xPos + 25; // Center of alien
+            let alienX = gameManager.groupAlien[k].xPos + 25;
             let alienY = gameManager.groupAlien[k].yPos + 25;
             let dx = alienX - flameX;
             let dy = alienY - flameY;
             let distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance < size / 2 + 25) {
-              // 25 is alien radius
-              // Spawn pickup at enemy location before removing it
               gameManager.spawnPickup(
                 gameManager.groupAlien[k].xPos,
                 gameManager.groupAlien[k].yPos
               );
-
-              // Remove the alien
               gameManager.groupAlien.splice(k, 1);
-              gameState.score += GAME_CONFIG.ENEMY_KILL_SCORE; // Add points for hitting an alien
-              break; // Exit alien loop since this flame hit something
+              gameState.score += GAME_CONFIG.ENEMY_KILL_SCORE;
+              break;
             }
           }
         }
 
-        // Check collision with enemy bullets
+        // Bullet collision
         for (let k = gameManager.groupEnemyBullet.length - 1; k >= 0; k--) {
           if (gameManager.groupEnemyBullet[k]) {
-            let bulletX = gameManager.groupEnemyBullet[k].xPos + 25; // Center of bullet
+            let bulletX = gameManager.groupEnemyBullet[k].xPos + 25;
             let bulletY = gameManager.groupEnemyBullet[k].yPos + 25;
             let dx = bulletX - flameX;
             let dy = bulletY - flameY;
             let distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance < size / 2 + 25) {
-              // Remove the enemy bullet
               gameManager.groupEnemyBullet.splice(k, 1);
-              // Don't break here - let the flame destroy multiple bullets
             }
           }
         }
@@ -81,49 +76,52 @@ class FlameSystem {
           assetManager.createFlameConeGraphics();
         }
 
-        // FPS throttling: only draw every 3rd frame for better performance
+        // FPS throttling
         if (gameState.frameCounter % 3 === 0) {
-          // Only advance frame at the specified frame rate
           if (
             currentTime - gameState.lastFrameTime >
             1000 / gameState.frameRate
           ) {
-            gameState.currentFrame = (gameState.currentFrame + 1) % 5; // Use 5 frames for animation
+            gameState.currentFrame = (gameState.currentFrame + 1) % 5;
             gameState.lastFrameTime = currentTime;
           }
-
-          // Draw flame cone attached to player sprite (no rotation)
-          let flameX =
-            gameManager.player.xPos + gameManager.player.size / 2 + 25;
-          let flameY =
-            gameManager.player.yPos + gameManager.player.size / 2 - 50;
 
           let flameImage =
             assetManager.getFlameConeGraphic() ||
             assetManager.getFlameConeFallbackGraphic();
 
+          push();
+          translate(
+            gameManager.player.xPos + gameManager.player.size / 2,
+            gameManager.player.yPos + gameManager.player.size / 2
+          );
+          rotate(gameManager.player.rotation);
+
           if (flameImage) {
-            push();
-            translate(flameX, flameY);
-            rotate(gameManager.player.rotation);
-            image(flameImage, -flameImage.width / 2, -flameImage.height / 2); // center of image at tip
-            pop();
+            image(
+              flameImage,
+              -gameManager.player.size - 9,
+              -gameManager.player.size * 2.5
+            );
           } else {
-            push();
-            translate(flameX, flameY);
-            rotate(gameManager.player.rotation);
             fill(255, 100, 0, 200);
-            rect(-10, -10, 20, 20); // center of rect at tip
-            pop();
+            rect(
+              -gameManager.player.size - 19,
+              -gameManager.player.size * 2.5 - 10,
+              20,
+              20
+            );
           }
+
+          pop();
         }
 
         gameState.frameCounter++;
 
-        // Check flame cone collision with aliens (always check for gameplay)
+        // 🔥 Always check flame collision
         this.checkFlameConeCollision(
           gameManager.player.xPos + gameManager.player.size / 2,
-          gameManager.player.yPos + gameManager.player.size / 2 - 10,
+          gameManager.player.yPos + gameManager.player.size / 2,
           4
         );
       }
