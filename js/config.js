@@ -142,12 +142,12 @@ const IMAGE_PATHS = {
   DARK_PLAYER: "images/player/dark-player.png",
   DARK_PICKUP: "images/pick-ups/dark-pickup.png",
 
-  ENEMY: "images/enemies/n-enemy.png",
-  ENEMY_OLD: "images/enemies/enemy.png", // legacy, not used by default
-  ICE_DRONE: "images/enemies/ice/ice1-drone.png",
-  ICE_SLOWER: "images/enemies/ice/ice2-slower.png",
-  ICE_SPEED: "images/enemies/ice/ice3-speed.png",
-  ICE_BEAM: "images/enemies/ice/ice5-beam.png", // Enemy image
+  ENEMY: "images/enemies/base_enemies/n-enemy.png",
+  ENEMY_OLD: "images/enemies/base_enemies/enemy.png", // legacy, not used by default
+  ICE_DRONE: "images/enemies/base_enemies/ice/ice1-drone.png",
+  ICE_SLOWER: "images/enemies/base_enemies/ice/ice2-slower.png",
+  ICE_SPEED: "images/enemies/base_enemies/ice/ice3-speed.png",
+  ICE_BEAM: "images/enemies/base_enemies/ice/ice5-beam.png", // Enemy image
 
   BULLET: "images/bullets/player-bullets/bullet.png",
   ENEMY_BULLET: "images/bullets/enemy-bullets/en-bullet.png",
@@ -169,26 +169,26 @@ const IMAGE_PATHS = {
   SPEED: "images/pick-ups/speed.png",
 
   // Fire enemies
-  FIRE_DRONE: "images/enemies/fire/fire2-drone.png",
-  FIRE_SPEED: "images/enemies/fire/fire3-speed.png",
+  FIRE_DRONE: "images/enemies/base_enemies/fire/fire2-drone.png",
+  FIRE_SPEED: "images/enemies/base_enemies/fire/fire3-speed.png",
   FIRE_BULLET: "images/bullets/enemy-bullets/fire/fire-bullet.png",
 
   // Rocket enemies
-  ROCKET: "images/enemies/fire/fire1-rocket.png",
+  ROCKET: "images/enemies/base_enemies/fire/fire1-rocket.png",
   SIDEWINDER: "images/bullets/enemy-bullets/fire/sidewinder.png",
 
   // Toxic enemies
-  TOXIC_DRONE: "images/enemies/toxic/toxic1-drone.png",
-  TOXIC_GAS: "images/enemies/toxic/toxic2-gas.png",
+  TOXIC_DRONE: "images/enemies/base_enemies/toxic/toxic1-drone.png",
+  TOXIC_GAS: "images/enemies/base_enemies/toxic/toxic2-gas.png",
   TOXIC_BULLET: "images/bullets/enemy-bullets/toxic/tox-bullet.png",
   TOXIC_CAN: "images/bullets/enemy-bullets/toxic/tox-can.png",
   TOXIC_EXPLO: "images/bullets/enemy-bullets/toxic/tox-explo.png",
 
   // Dark enemies
-  DARK_DRONE: "images/enemies/dark/dark5-drone.png",
-  DARK_BEAM_ENEMY: "images/enemies/dark/dark-beam-enemy.png",
-  DARK_MULTI: "images/enemies/dark/dark4-multi.png",
-  DARK_SHIELD: "images/enemies/dark/dark2-shield.png",
+  DARK_DRONE: "images/enemies/base_enemies/dark/dark5-drone.png",
+  DARK_BEAM_ENEMY: "images/enemies/base_enemies/dark/dark-beam-enemy.png",
+  DARK_MULTI: "images/enemies/base_enemies/dark/dark4-multi.png",
+  DARK_SHIELD: "images/enemies/base_enemies/dark/dark2-shield.png",
   DARK_BULLET: "images/bullets/enemy-bullets/dark/dark-bullet.png",
   DARK_LASER: "images/bullets/enemy-bullets/dark/dark-laz.png",
   DARK_BEAM_START: "images/bullets/enemy-bullets/dark/newbeamStart.PNG",
@@ -198,20 +198,20 @@ const IMAGE_PATHS = {
   // New enemy images
 
   // New fire enemy images
-  FIRE1_ROCKET: "images/enemies/fire/fire1-rocket.png",
-  FIRE2_DRONE: "images/enemies/fire/fire2-drone.png",
-  FIRE3_SPEED: "images/enemies/fire/fire3-speed.png",
+  FIRE1_ROCKET: "images/enemies/base_enemies/fire/fire1-rocket.png",
+  FIRE2_DRONE: "images/enemies/base_enemies/fire/fire2-drone.png",
+  FIRE3_SPEED: "images/enemies/base_enemies/fire/fire3-speed.png",
 
   // New ice enemy images
-  ICE1_DRONE: "images/enemies/ice/ice1-drone.png",
-  ICE2_SLOWER: "images/enemies/ice/ice2-slower.png",
-  ICE3_SPEED: "images/enemies/ice/ice3-speed.png",
-  ICE5_BEAM: "images/enemies/ice/ice5-beam.png",
+  ICE1_DRONE: "images/enemies/base_enemies/ice/ice1-drone.png",
+  ICE2_SLOWER: "images/enemies/base_enemies/ice/ice2-slower.png",
+  ICE3_SPEED: "images/enemies/base_enemies/ice/ice3-speed.png",
+  ICE5_BEAM: "images/enemies/base_enemies/ice/ice5-beam.png",
 
   // New toxic enemy images
-  TOXIC1_DRONE: "images/enemies/toxic/toxic1-drone.png",
-  TOXIC2_GAS: "images/enemies/toxic/toxic2-gas.png",
-  TOXIC4_TANK: "images/enemies/toxic/toxic4-tank.png",
+  TOXIC1_DRONE: "images/enemies/base_enemies/toxic/toxic1-drone.png",
+  TOXIC2_GAS: "images/enemies/base_enemies/toxic/toxic2-gas.png",
+  TOXIC4_TANK: "images/enemies/base_enemies/toxic/toxic4-tank.png",
 
   // New player bullet images
   // Remove BLACK_BULLET from IMAGE_PATHS if only used for player black bullet features.
