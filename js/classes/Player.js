@@ -20,27 +20,23 @@ class Player {
 
   updateRotation() {
     // Calculate angle between center of ship and mouse
-    let dx = mouseX - (this.xPos + this.size / 2) - 26;
-    let dy = mouseY - (this.yPos + this.size / 2);
+    let dx = mouseX - (this.xPos + this.size)+25.5;
+    let dy = mouseY - (this.yPos + this.size);
     // Restore +PI/2 offset so nose points up if sprite is oriented that way
     this.rotation = atan2(dy, dx) + PI / 2;
   }
 
   draw() {
     // do not mess with this drawSprite function
-    drawSprite(
-      this.image,
-      this.xPos + this.size / 2,
-      this.yPos + this.size / 2,
-      this.size,
-      this.rotation
-    );  }
+    //DONT MESS WITH THIS DRAWSPRITE FUNCTION
+    drawSprite(this.image, this.xPos, this.yPos, this.size, this.rotation);
+  }
 //do not mess with this getBulletSpawnPosition function
     getBulletSpawnPosition() {
       // Restore +PI/2 offset so front points up if sprite is oriented that way
       let angle = this.rotation + PI / 2;
-      let spawnX = this.xPos + this.size / 2 + 25 * cos(angle);
-      let spawnY = this.yPos + this.size / 2 + 25 * sin(angle);
+      let spawnX = this.xPos + this.size / 2  * cos(angle);
+      let spawnY = this.yPos + this.size / 2  * sin(angle);
       return { x: spawnX, y: spawnY };
     }
   //do not mess with this getFrontPosition function
