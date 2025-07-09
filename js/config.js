@@ -102,7 +102,6 @@ const GAME_CONFIG = {
   DARK_BEAM_DAMAGE: 8, // Dark beam does 8 damage
   DARK_BEAM_RANGE: 400, // Range for beam activation
   DARK_BEAM_LENGTH: 175, // Reduced from 350
-  DARK_BEAM_WIDTH: 12.5, // Reduced from 25
   DARK_MULTI_SHOOT_CHANCE: 0.012,
   DARK_LASER_SPACING: 6, // Increased from 3
   DARK_SHIELD_CONNECTOR_RANGE: 400, // Range for shield connectors
@@ -187,19 +186,16 @@ const IMAGE_PATHS = {
 
   // Dark enemies
   DARK_DRONE: "images/enemies/dark/dark5-drone.png",
-  DARK_BEAM: "images/enemies/dark/dark1-beam.png",
+  DARK_BEAM_ENEMY: "images/enemies/dark/dark-beam-enemy.png",
   DARK_MULTI: "images/enemies/dark/dark4-multi.png",
   DARK_SHIELD: "images/enemies/dark/dark2-shield.png",
   DARK_BULLET: "images/bullets/enemy-bullets/dark/dark-bullet.png",
   DARK_LASER: "images/bullets/enemy-bullets/dark/dark-laz.png",
-  DARK_BEAM_BULLET: "images/bullets/enemy-bullets/dark/dark-beam.png",
+  DARK_BEAM_START: "images/bullets/enemy-bullets/dark/newbeamStart.PNG",
+  DARK_BEAM_MIDDLE: "images/bullets/enemy-bullets/dark/newbeamMiddle.PNG",
+  DARK_BEAM_END: "images/bullets/enemy-bullets/dark/newbeamEnd.PNG",
 
   // New enemy images
-  DARK1_BEAM: "images/enemies/dark/dark1-beam.png",
-  DARK2_SHIELD: "images/enemies/dark/dark2-shield.png",
-  DARK3_TANK: "images/enemies/dark/dark3-tank.png",
-  DARK4_MULTI: "images/enemies/dark/dark4-multi.png",
-  DARK5_DRONE: "images/enemies/dark/dark5-drone.png",
 
   // New fire enemy images
   FIRE1_ROCKET: "images/enemies/fire/fire1-rocket.png",

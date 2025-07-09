@@ -74,8 +74,21 @@ class Player {
     }
   }
 
-  takeDamage(damage) {
-    console.log("Player taking damage:", damage);
+  takeDamage(damage, type = "generic") {
+    if (this.isInvincible) return;
+    // Apply resistance if type is provided
+    let resistance = 0;
+    if (type && this.resistances) {
+      resistance = this.resistances.getResistance(type) || 0;
+    }
+    const actualDamage = Math.round(damage * (1 - resistance));
+    if (typeof gameState !== "undefined") {
+      gameState.health = (gameState.health || 100) - actualDamage;
+      console.log(
+        `Player taking damage: ${actualDamage} (raw: ${damage}, resistance: ${resistance}) New health: ${gameState.health}`
+      );
+    }
+    // Optionally, handle shields, game over, etc. here
   }
 
   setResistancesForPowerup(type) {

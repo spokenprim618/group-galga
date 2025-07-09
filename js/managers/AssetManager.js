@@ -13,106 +13,173 @@ class AssetManager {
 
   preload() {
     console.log("Loading images...");
-    try {
-      // Load all images
-      this.images.player = loadImage(IMAGE_PATHS.PLAYER);
-      this.images.enemy = loadImage(IMAGE_PATHS.ENEMY);
-      this.images.iceDrone = loadImage(IMAGE_PATHS.ICE_DRONE);
-      this.images.iceSlower = loadImage(IMAGE_PATHS.ICE_SLOWER);
-      this.images.iceSpeed = loadImage(IMAGE_PATHS.ICE_SPEED);
-      this.images.iceBeam = loadImage(IMAGE_PATHS.ICE_BEAM);
-      this.images.bullet = loadImage(IMAGE_PATHS.BULLET);
-      this.images.enemyBullet = loadImage(IMAGE_PATHS.ENEMY_BULLET);
-      this.images.iceBullet = loadImage(IMAGE_PATHS.ICE_BULLET);
-      this.images.iceWave = loadImage(IMAGE_PATHS.ICE_WAVE);
-      this.images.iceBeamBullet = loadImage(IMAGE_PATHS.ICE_BEAM_BULLET);
-      this.images.angel = loadImage(IMAGE_PATHS.ANGEL);
-      this.images.fireUp = loadImage(IMAGE_PATHS.FIRE_UP);
-      this.images.fire2 = loadImage(IMAGE_PATHS.FIRE2);
-      this.images.iceUp = loadImage(IMAGE_PATHS.ICE_UP);
-      this.images.ice2 = loadImage(IMAGE_PATHS.ICE2);
-      this.images.player1 = loadImage(IMAGE_PATHS.PLAYER1);
-      this.images.repair = loadImage(IMAGE_PATHS.REPAIR);
-      this.images.life = loadImage(IMAGE_PATHS.LIFE);
-      this.images.flame = loadImage(IMAGE_PATHS.FLAME);
-      this.images.iceExplo = loadImage(IMAGE_PATHS.ICE_EXPLO);
-      this.images.lazUp = loadImage(IMAGE_PATHS.LAZ_UP);
-      this.images.lazBullet = loadImage(IMAGE_PATHS.LAZ_BULLET);
-      this.images.scrap = loadImage(IMAGE_PATHS.SCRAP);
-      this.images.scrapShip = loadImage(IMAGE_PATHS.SCRAP_SHIP);
-      this.images.sawBlade = loadImage(IMAGE_PATHS.SAW_BLADE);
-      this.images.shield = loadImage(IMAGE_PATHS.SHIELD);
-      this.images.speed = loadImage(IMAGE_PATHS.SPEED);
-
-      // Fire enemies
-      this.images.fireDrone = loadImage(IMAGE_PATHS.FIRE_DRONE);
-      this.images.fireSpeed = loadImage(IMAGE_PATHS.FIRE_SPEED);
-      this.images.fireBullet = loadImage(IMAGE_PATHS.FIRE_BULLET);
-
-      // Rocket enemies
-      this.images.rocket = loadImage(IMAGE_PATHS.ROCKET);
-      this.images.sidewinder = loadImage(IMAGE_PATHS.SIDEWINDER);
-
-      // Toxic enemies
-      this.images.toxicDrone = loadImage(IMAGE_PATHS.TOXIC_DRONE);
-      this.images.toxicGas = loadImage(IMAGE_PATHS.TOXIC_GAS);
-      this.images.toxicBullet = loadImage(IMAGE_PATHS.TOXIC_BULLET);
-      this.images.toxicCan = loadImage(IMAGE_PATHS.TOXIC_CAN);
-      this.images.toxicExplo = loadImage(IMAGE_PATHS.TOXIC_EXPLO);
-
-      // Dark enemies
-      this.images.darkDrone = loadImage(IMAGE_PATHS.DARK_DRONE);
-      this.images.darkBeam = loadImage(IMAGE_PATHS.DARK_BEAM);
-      this.images.darkMulti = loadImage(IMAGE_PATHS.DARK_MULTI);
-      this.images.darkShield = loadImage(IMAGE_PATHS.DARK_SHIELD);
-      this.images.darkBullet = loadImage(IMAGE_PATHS.DARK_BULLET);
-      this.images.darkLaser = loadImage(IMAGE_PATHS.DARK_LASER);
-      this.images.darkBeamBullet = loadImage(IMAGE_PATHS.DARK_BEAM_BULLET);
-      this.images.darkBulletPrimer = loadImage(IMAGE_PATHS.DARK_BULLET_PRIMER);
-      this.images.darkhole = loadImage(IMAGE_PATHS.DARK_HOLE);
-
-      // New enemies
-      this.images.dark1Beam = loadImage(IMAGE_PATHS.DARK1_BEAM);
-      this.images.dark2Shield = loadImage(IMAGE_PATHS.DARK2_SHIELD);
-      this.images.dark3Tank = loadImage(IMAGE_PATHS.DARK3_TANK);
-      this.images.dark4Multi = loadImage(IMAGE_PATHS.DARK4_MULTI);
-      this.images.dark5Drone = loadImage(IMAGE_PATHS.DARK5_DRONE);
-      this.images.fire1Rocket = loadImage(IMAGE_PATHS.FIRE1_ROCKET);
-      this.images.fire2Drone = loadImage(IMAGE_PATHS.FIRE2_DRONE);
-      this.images.fire3Speed = loadImage(IMAGE_PATHS.FIRE3_SPEED);
-      this.images.ice1Drone = loadImage(IMAGE_PATHS.ICE1_DRONE);
-      this.images.ice2Slower = loadImage(IMAGE_PATHS.ICE2_SLOWER);
-      this.images.ice3Speed = loadImage(IMAGE_PATHS.ICE3_SPEED);
-      this.images.ice5Beam = loadImage(IMAGE_PATHS.ICE5_BEAM);
-      this.images.toxic1Drone = loadImage(IMAGE_PATHS.TOXIC1_DRONE);
-      this.images.toxic2Gas = loadImage(IMAGE_PATHS.TOXIC2_GAS);
-      this.images.toxic4Tank = loadImage(IMAGE_PATHS.TOXIC4_TANK);
-      // New player bullets
-      // New enemy bullets
-      this.images.darkConnector = loadImage(IMAGE_PATHS.DARK_CONNECTOR);
-      this.images.darkLaz = loadImage(IMAGE_PATHS.DARK_LAZ);
-      this.images.fireBullet = loadImage(IMAGE_PATHS.FIRE_BULLET);
-      this.images.iceBeamBullet = loadImage(IMAGE_PATHS.ICE_BEAM_BULLET);
-      this.images.iceWave = loadImage(IMAGE_PATHS.ICE_WAVE);
-      this.images.iceBullet = loadImage(IMAGE_PATHS.ICE_BULLET);
-      this.images.toxBullet = loadImage(IMAGE_PATHS.TOX_BULLET);
-      this.images.toxCan = loadImage(IMAGE_PATHS.TOX_CAN);
-      this.images.toxExplo = loadImage(IMAGE_PATHS.TOX_EXPLO);
-      this.images.darkPlayer = loadImage(IMAGE_PATHS.DARK_PLAYER);
-      this.images.darkPickup = loadImage(IMAGE_PATHS.DARK_PICKUP);
-
-      console.log("All images loaded successfully");
-    } catch (error) {
-      console.error("Error loading images:", error);
-    }
+    // Helper to get fallback image
+    const getFallback = () => {
+      if (!this.images.__fallback) {
+        let gfx = createGraphics(50, 50);
+        gfx.background(255, 0, 0);
+        gfx.fill(255);
+        gfx.textAlign(CENTER, CENTER);
+        gfx.text("?", 25, 25);
+        this.images.__fallback = gfx;
+      }
+      return this.images.__fallback;
+    };
+    // Helper to load with error handling
+    const safeLoad = (key, path) => {
+      try {
+        if (!path) throw new Error("Image path is undefined");
+        this.images[key] = loadImage(path);
+      } catch (error) {
+        console.warn(
+          `Error loading image for key '${key}'. Path: ${
+            path || "undefined"
+          }. Error: ${error.message}. Using fallback image.`
+        );
+        this.images[key] = getFallback();
+      }
+    };
+    // Player and UI
+    safeLoad("player", IMAGE_PATHS.PLAYER);
+    safeLoad("enemy", IMAGE_PATHS.ENEMY);
+    safeLoad("iceDrone", IMAGE_PATHS.ICE_DRONE);
+    safeLoad("iceSlower", IMAGE_PATHS.ICE_SLOWER);
+    safeLoad("iceSpeed", IMAGE_PATHS.ICE_SPEED);
+    safeLoad("iceBeam", IMAGE_PATHS.ICE_BEAM);
+    safeLoad("bullet", IMAGE_PATHS.BULLET);
+    safeLoad("enemyBullet", IMAGE_PATHS.ENEMY_BULLET);
+    safeLoad("iceBullet", IMAGE_PATHS.ICE_BULLET);
+    safeLoad("iceWave", IMAGE_PATHS.ICE_WAVE);
+    safeLoad("iceBeamBullet", IMAGE_PATHS.ICE_BEAM_BULLET);
+    safeLoad("angel", IMAGE_PATHS.ANGEL);
+    safeLoad("fireUp", IMAGE_PATHS.FIRE_UP);
+    safeLoad("fire2", IMAGE_PATHS.FIRE2);
+    safeLoad("iceUp", IMAGE_PATHS.ICE_UP);
+    safeLoad("ice2", IMAGE_PATHS.ICE2);
+    safeLoad("player1", IMAGE_PATHS.PLAYER1);
+    safeLoad("repair", IMAGE_PATHS.REPAIR);
+    safeLoad("life", IMAGE_PATHS.LIFE);
+    safeLoad("flame", IMAGE_PATHS.FLAME);
+    safeLoad("iceExplo", IMAGE_PATHS.ICE_EXPLO);
+    safeLoad("lazUp", IMAGE_PATHS.LAZ_UP);
+    safeLoad("lazBullet", IMAGE_PATHS.LAZ_BULLET);
+    safeLoad("scrap", IMAGE_PATHS.SCRAP);
+    safeLoad("scrapShip", IMAGE_PATHS.SCRAP_SHIP);
+    safeLoad("sawBlade", IMAGE_PATHS.SAW_BLADE);
+    safeLoad("shield", IMAGE_PATHS.SHIELD);
+    safeLoad("speed", IMAGE_PATHS.SPEED);
+    // Fire enemies
+    safeLoad("fireDrone", IMAGE_PATHS.FIRE_DRONE);
+    safeLoad("fireSpeed", IMAGE_PATHS.FIRE_SPEED);
+    safeLoad("fireBullet", IMAGE_PATHS.FIRE_BULLET);
+    // Rocket enemies
+    safeLoad("rocket", IMAGE_PATHS.ROCKET);
+    safeLoad("sidewinder", IMAGE_PATHS.SIDEWINDER);
+    // Toxic enemies
+    safeLoad("toxicDrone", IMAGE_PATHS.TOXIC_DRONE);
+    safeLoad("toxicGas", IMAGE_PATHS.TOXIC_GAS);
+    safeLoad("toxicBullet", IMAGE_PATHS.TOXIC_BULLET);
+    safeLoad("toxicCan", IMAGE_PATHS.TOXIC_CAN);
+    safeLoad("toxicExplo", IMAGE_PATHS.TOXIC_EXPLO);
+    // Dark enemies
+    safeLoad("darkBeamEnemy", IMAGE_PATHS.DARK_BEAM_ENEMY);
+    safeLoad("darkDrone", IMAGE_PATHS.DARK_DRONE);
+    safeLoad("darkMulti", IMAGE_PATHS.DARK_MULTI);
+    safeLoad("darkShield", IMAGE_PATHS.DARK_SHIELD);
+    safeLoad("darkBullet", IMAGE_PATHS.DARK_BULLET);
+    safeLoad("darkLaser", IMAGE_PATHS.DARK_LASER);
+    safeLoad("darkBulletPrimer", IMAGE_PATHS.DARK_BULLET_PRIMER);
+    safeLoad("darkhole", IMAGE_PATHS.DARK_HOLE);
+    // New enemies
+    safeLoad("fire1Rocket", IMAGE_PATHS.FIRE1_ROCKET);
+    safeLoad("fire2Drone", IMAGE_PATHS.FIRE2_DRONE);
+    safeLoad("fire3Speed", IMAGE_PATHS.FIRE3_SPEED);
+    safeLoad("ice1Drone", IMAGE_PATHS.ICE1_DRONE);
+    safeLoad("ice2Slower", IMAGE_PATHS.ICE2_SLOWER);
+    safeLoad("ice3Speed", IMAGE_PATHS.ICE3_SPEED);
+    safeLoad("ice5Beam", IMAGE_PATHS.ICE5_BEAM);
+    safeLoad("toxic1Drone", IMAGE_PATHS.TOXIC1_DRONE);
+    safeLoad("toxic2Gas", IMAGE_PATHS.TOXIC2_GAS);
+    safeLoad("toxic4Tank", IMAGE_PATHS.TOXIC4_TANK);
+    // New player bullets
+    // New enemy bullets
+    safeLoad("darkConnector", IMAGE_PATHS.DARK_CONNECTOR);
+    safeLoad("darkLaz", IMAGE_PATHS.DARK_LAZ);
+    safeLoad("fireBullet", IMAGE_PATHS.FIRE_BULLET);
+    safeLoad("iceBeamBullet", IMAGE_PATHS.ICE_BEAM_BULLET);
+    safeLoad("iceWave", IMAGE_PATHS.ICE_WAVE);
+    safeLoad("iceBullet", IMAGE_PATHS.ICE_BULLET);
+    safeLoad("toxBullet", IMAGE_PATHS.TOX_BULLET);
+    safeLoad("toxCan", IMAGE_PATHS.TOX_CAN);
+    safeLoad("toxExplo", IMAGE_PATHS.TOX_EXPLO);
+    safeLoad("darkPlayer", IMAGE_PATHS.DARK_PLAYER);
+    safeLoad("darkPickup", IMAGE_PATHS.DARK_PICKUP);
+    safeLoad("darkBeamStart", IMAGE_PATHS.DARK_BEAM_START);
+    safeLoad("darkBeamMiddle", IMAGE_PATHS.DARK_BEAM_MIDDLE);
+    safeLoad("darkBeamEnd", IMAGE_PATHS.DARK_BEAM_END);
+    console.log("All images loaded successfully");
   }
 
-  getImage(name) {
-    if (!this.images[name]) {
-      console.warn(`Image '${name}' not found in AssetManager`);
-      return null;
+  getImage(key) {
+    try {
+      if (this.images[key]) {
+        return this.images[key];
+      } else {
+        let imagePath =
+          IMAGE_PATHS && IMAGE_PATHS[key.toUpperCase()]
+            ? IMAGE_PATHS[key.toUpperCase()]
+            : undefined;
+        if (!imagePath) {
+          // Try camelCase to UPPER_SNAKE_CASE conversion
+          const snakeKey = key.replace(/([A-Z])/g, "_$1").toUpperCase();
+          imagePath =
+            IMAGE_PATHS && IMAGE_PATHS[snakeKey]
+              ? IMAGE_PATHS[snakeKey]
+              : undefined;
+        }
+        console.warn(
+          `Image for key '${key}' not found. Path: ${
+            imagePath || "unknown"
+          } Returning fallback image.`
+        );
+        if (!this.images.__fallback) {
+          // Create a simple fallback image if not already present
+          let gfx = createGraphics(50, 50);
+          gfx.background(255, 0, 0);
+          gfx.fill(255);
+          gfx.textAlign(CENTER, CENTER);
+          gfx.text("?", 25, 25);
+          this.images.__fallback = gfx;
+        }
+        return this.images.__fallback;
+      }
+    } catch (error) {
+      let imagePath =
+        IMAGE_PATHS && IMAGE_PATHS[key.toUpperCase()]
+          ? IMAGE_PATHS[key.toUpperCase()]
+          : undefined;
+      if (!imagePath) {
+        const snakeKey = key.replace(/([A-Z])/g, "_$1").toUpperCase();
+        imagePath =
+          IMAGE_PATHS && IMAGE_PATHS[snakeKey]
+            ? IMAGE_PATHS[snakeKey]
+            : undefined;
+      }
+      console.warn(
+        `Error retrieving image for key '${key}'. Path: ${
+          imagePath || "unknown"
+        }. Error: ${error.message}. Returning fallback image.`
+      );
+      if (!this.images.__fallback) {
+        let gfx = createGraphics(50, 50);
+        gfx.background(255, 0, 0);
+        gfx.fill(255);
+        gfx.textAlign(CENTER, CENTER);
+        gfx.text("?", 25, 25);
+        this.images.__fallback = gfx;
+      }
+      return this.images.__fallback;
     }
-    return this.images[name];
   }
 
   createFlameConeGraphics() {
@@ -211,7 +278,8 @@ class AssetManager {
       toxicExplo: "toxicExplo",
       darkBullet: "darkBullet",
       darkLaser: "darkLaser",
-      darkBeamBullet: "darkBeamBullet",
+      darkBulletPrimer: "darkBulletPrimer",
+      darkhole: "darkhole",
       // Pickups (support both kebab-case and camelCase)
       fireUp: "fireUp",
       "fire-up": "fireUp",
@@ -227,11 +295,7 @@ class AssetManager {
       dark: "darkPickup",
       "dark-pickup": "darkPickup",
       // New enemies
-      dark1Beam: "dark1Beam",
-      dark2Shield: "dark2Shield",
-      dark3Tank: "dark3Tank",
-      dark4Multi: "dark4Multi",
-      dark5Drone: "dark5Drone",
+      darkBeamEnemy: "darkBeamEnemy",
       fire1Rocket: "fire1Rocket",
       fire2Drone: "fire2Drone",
       fire3Speed: "fire3Speed",

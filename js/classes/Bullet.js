@@ -984,3 +984,211 @@ class DarkHoleObject {
     return dist < this.removeRadius;
   }
 }
+
+class Beam {
+  constructor(
+    originX,
+    originY,
+    angle,
+    length,
+    width,
+    middleImage = null,
+    damage,
+    range = 300,
+    damageInterval = 1000,
+    startImage = null,
+    endImage = null
+  ) {
+    this.originX = originX;
+    this.originY = originY;
+    this.angle = angle;
+    this.length = length;
+    this.width = width;
+    this.middleImage = middleImage;
+    this.startImage = startImage;
+    this.endImage = endImage;
+    this.damage = damage;
+    this.range = range;
+    this.damageInterval = damageInterval;
+    this.lastDamageTime = 0;
+    this.active = false;
+  }
+
+  updateBeam(targetX, targetY, debugForceActive = false) {
+    // 1. Always update originX and originY dynamically (should be set by the enemy before calling this)
+    // 2. Add a toggle to force beam active for debugging
+    if (debugForceActive) {
+      this.active = true;
+    } else {
+      const dx = targetX - this.originX;
+      const dy = targetY - this.originY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      this.active = distance <= this.length;
+    }
+    // 3. Add detailed debug logs for all relevant values
+    const dx = targetX - this.originX;
+    const dy = targetY - this.originY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    this.angle = Math.atan2(dy, dx);
+    // Damage logic: check if player is within beam and apply damage
+    if (
+      this.active &&
+      typeof gameManager !== "undefined" &&
+      gameManager.player
+    ) {
+      const player = gameManager.player;
+      if (this.isHittingPlayer(player)) {
+        const now = millis();
+        if (!this.lastDamageTime || now - this.lastDamageTime >= 1000) {
+          console.log("Beam geometric collision detected!");
+          player.takeDamage
+            ? player.takeDamage(10, "dark")
+            : (player.health -= 10);
+          this.lastDamageTime = now;
+        }
+      }
+    }
+    console.log(
+      "[BEAM DEBUG]",
+      "active:",
+      this.active,
+      "angle:",
+      this.angle.toFixed(2),
+      "distance:",
+      distance.toFixed(2),
+      "range:",
+      this.range,
+      "originX:",
+      this.originX,
+      "originY:",
+      this.originY,
+      "targetX:",
+      targetX,
+      "targetY:",
+      targetY
+    );
+    // 4. Check for coordinate space mismatch (warn if distance is suspiciously large)
+    if (distance > this.range * 2) {
+      console.warn(
+        "[BEAM DEBUG] Possible coordinate space mismatch: distance much greater than range."
+      );
+    }
+    // 5. Add a visual indicator at the origin and target for visual debugging (if p5.js is available)
+    if (typeof ellipse === "function") {
+      push();
+      stroke("red");
+      fill("red");
+      ellipse(this.originX, this.originY, 8, 8); // origin
+      stroke("blue");
+      fill("blue");
+      ellipse(targetX, targetY, 8, 8); // target
+      pop();
+    }
+  }
+
+  isHittingPlayer(player) {
+    if (!player) return false;
+    // Beam start and angle
+    const beamStartX = this.originX;
+    const beamStartY = this.originY;
+    const beamAngle = this.angle;
+    // Player center
+    const playerCenterX = player.xPos + player.size / 2;
+    const playerCenterY = player.yPos + player.size / 2;
+    // Distance from beam start to player
+    const distance = dist(beamStartX, beamStartY, playerCenterX, playerCenterY);
+    // Check if player is within beam length
+    if (distance <= this.length) {
+      // Angle from beam start to player
+      const angleToPlayer = Math.atan2(
+        playerCenterY - beamStartY,
+        playerCenterX - beamStartX
+      );
+      let angleDiff = Math.abs(angleToPlayer - beamAngle);
+      // Normalize angle difference
+      if (angleDiff > Math.PI) {
+        angleDiff = Math.PI * 2 - angleDiff;
+      }
+      // Beam width in radians
+      const minDistance = Math.max(distance, 1);
+      const beamWidthRadians = Math.atan2(this.width / 2, minDistance);
+      return angleDiff <= beamWidthRadians;
+    }
+    return false;
+  }
+
+  drawBeam() {
+    if (!this.active) return;
+    // Always log image dimensions for debugging
+    console.log("[BEAM IMAGE WIDTHS]", {
+      startW: this.startImage?.width,
+      startH: this.startImage?.height,
+      middleW: this.middleImage?.width,
+      middleH: this.middleImage?.height,
+      endW: this.endImage?.width,
+      endH: this.endImage?.height,
+      beamLen: this.length,
+    });
+    const beamStartX = this.originX;
+    const beamStartY = this.originY;
+    const beamLen = this.length;
+    const startW = 10; // updated calibrated width
+    const endW = 100; // new calibrated width
+    const middleW = 30; // updated calibrated width
+
+    // Draw even if start+end > beamLen (they will overlap)
+    const gap = 10; // leave beam slightly short
+    const rawUsableLen = beamLen - startW - endW - gap;
+    const usableLen = Math.max(0, rawUsableLen);
+    const numFullTiles = Math.floor(usableLen / middleW);
+    const leftover = usableLen - numFullTiles * middleW;
+
+    push();
+    translate(beamStartX, beamStartY);
+    rotate(this.angle);
+    imageMode(CORNER);
+
+    let x = 0;
+
+    // Start image
+    if (this.startImage && startW > 0) {
+      image(this.startImage, x, -this.width / 2, startW, this.width);
+      x += startW;
+    }
+
+    // Middle tiles
+    for (let i = 0; i < numFullTiles; i++) {
+      image(this.middleImage, x, -this.width / 2, middleW, this.width);
+      x += middleW;
+    }
+
+    // Leftover partial tile
+    if (leftover > 0 && this.middleImage) {
+      image(
+        this.middleImage,
+        x,
+        -this.width / 2,
+        leftover,
+        this.width,
+        0,
+        0,
+        leftover,
+        this.middleImage.height
+      );
+      x += leftover;
+    }
+
+    // End image, shifted back by gap
+    if (this.endImage && endW > 0) {
+      image(
+        this.endImage,
+        beamLen - endW - gap,
+        -this.width / 2,
+        endW,
+        this.width
+      );
+    }
+
+    pop();
+  }
+}

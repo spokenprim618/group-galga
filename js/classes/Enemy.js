@@ -582,189 +582,6 @@ class DarkDrone extends Alien {
   }
 }
 
-class DarkBeamEnemy extends Alien {
-  constructor(x, y) {
-    super(x, y, assetManager.getImage("darkBeam"));
-    this.type = "darkBeam";
-    this.beamActive = false;
-    this.beamAngle = 0;
-    this.lastDamageTime = 0;
-    this.damageInterval = 1000; // Damage every 1 second when beam is active
-  }
-
-  update() {
-    this.move();
-    this.updateBeam();
-  }
-
-  updateBeam() {
-    if (!gameManager.player || !gameState) return;
-
-    let center = this.getCenter();
-    let playerCenter = {
-      x: gameManager.player.xPos + gameManager.player.size / 2,
-      y: gameManager.player.yPos + gameManager.player.size / 2,
-    };
-
-    // Calculate distance to player
-    let distance = dist(center.x, center.y, playerCenter.x, playerCenter.y);
-
-    // Activate beam if player is in range
-    if (distance <= GAME_CONFIG.DARK_BEAM_RANGE) {
-      this.beamActive = true;
-      // Calculate angle to player
-      this.beamAngle = atan2(
-        playerCenter.y - center.y,
-        playerCenter.x - center.x
-      );
-
-      // Check if beam hits player and apply damage
-      if (this.isBeamHittingPlayer()) {
-        let currentTime = millis();
-        if (currentTime - this.lastDamageTime >= this.damageInterval) {
-          // Apply damage directly to game state (only affects player)
-          if (gameState.shields > 0) {
-            gameState.shields--; // Remove one shield
-            console.log(
-              "Shield absorbed dark beam damage! Shields remaining:",
-              gameState.shields
-            );
-          } else {
-            gameState.health -= GAME_CONFIG.DARK_BEAM_DAMAGE; // Deal damage
-            console.log(
-              "Player hit by dark beam! Health remaining:",
-              gameState.health
-            );
-          }
-          this.lastDamageTime = currentTime;
-
-          // Check for game over after damage
-          if (gameState.health <= 0) {
-            gameManager.checkGameOver();
-          }
-        }
-      }
-    } else {
-      this.beamActive = false;
-    }
-  }
-
-  isBeamHittingPlayer() {
-    if (!gameManager.player || !gameState) return false;
-
-    let center = this.getCenter();
-    let playerCenter = {
-      x: gameManager.player.xPos + gameManager.player.size / 2,
-      y: gameManager.player.yPos + gameManager.player.size / 2,
-    };
-
-    // Calculate beam start position (shifted forward by half the beam length)
-    let beamStartX =
-      center.x + cos(this.beamAngle) * (GAME_CONFIG.DARK_BEAM_LENGTH / 2);
-    let beamStartY =
-      center.y + sin(this.beamAngle) * (GAME_CONFIG.DARK_BEAM_LENGTH / 2);
-
-    // Calculate distance from beam start to player
-    let distance = dist(beamStartX, beamStartY, playerCenter.x, playerCenter.y);
-
-    // Check if player is within beam range and angle
-    if (distance <= GAME_CONFIG.DARK_BEAM_LENGTH) {
-      // Calculate angle from beam start to player
-      let angleToPlayer = atan2(
-        playerCenter.y - beamStartY,
-        playerCenter.x - beamStartX
-      );
-      let angleDiff = abs(angleToPlayer - this.beamAngle);
-
-      // Normalize angle difference
-      if (angleDiff > PI) {
-        angleDiff = TWO_PI - angleDiff;
-      }
-
-      // Check if player is within beam width (in radians)
-      // Avoid division by zero by using a minimum distance
-      let minDistance = max(distance, 1);
-      let beamWidthRadians = atan2(
-        GAME_CONFIG.DARK_BEAM_WIDTH / 2,
-        minDistance
-      );
-      return angleDiff <= beamWidthRadians;
-    }
-    return false;
-  }
-
-  draw() {
-    // Draw the enemy
-    drawSprite(this.image, this.xPos, this.yPos, this.size);
-
-    // Draw the beam if active
-    if (this.beamActive) {
-      this.drawBeam();
-    }
-  }
-
-  drawBeam() {
-    let center = this.getCenter();
-    let beamImage = assetManager.getImage("darkBeamBullet");
-
-    // Calculate beam start position (shifted forward by half the beam length)
-    let beamStartX =
-      center.x + cos(this.beamAngle) * (GAME_CONFIG.DARK_BEAM_LENGTH / 2);
-    let beamStartY =
-      center.y + sin(this.beamAngle) * (GAME_CONFIG.DARK_BEAM_LENGTH / 2);
-
-    try {
-      if (beamImage && beamImage.width) {
-        // Use the beam image
-        drawSprite(
-          beamImage,
-          beamStartX,
-          beamStartY,
-          GAME_CONFIG.DARK_BEAM_WIDTH,
-          this.beamAngle + HALF_PI
-        );
-      } else {
-        // Fallback to line drawing if image not loaded
-        stroke(100, 0, 150, 150); // Purple beam with transparency
-        strokeWeight(GAME_CONFIG.DARK_BEAM_WIDTH);
-        noFill();
-
-        // Calculate beam end point
-        let endX =
-          beamStartX + cos(this.beamAngle) * GAME_CONFIG.DARK_BEAM_LENGTH;
-        let endY =
-          beamStartY + sin(this.beamAngle) * GAME_CONFIG.DARK_BEAM_LENGTH;
-
-        // Draw the beam
-        line(beamStartX, beamStartY, endX, endY);
-
-        // Reset stroke
-        stroke(0);
-        strokeWeight(1);
-      }
-    } catch (error) {
-      console.log("Error drawing dark beam:", error);
-      // Fallback to simple line drawing
-      stroke(100, 0, 150, 150);
-      strokeWeight(GAME_CONFIG.DARK_BEAM_WIDTH);
-      noFill();
-      line(
-        beamStartX,
-        beamStartY,
-        beamStartX + cos(this.beamAngle) * GAME_CONFIG.DARK_BEAM_LENGTH,
-        beamStartY + sin(this.beamAngle) * GAME_CONFIG.DARK_BEAM_LENGTH
-      );
-      stroke(0);
-      strokeWeight(1);
-    }
-  }
-
-  // Override shouldShoot to return false since this enemy doesn't use bullets
-  shouldShoot() {
-    return false;
-  }
-}
-
 class DarkMultiEnemy extends Alien {
   constructor(x, y) {
     super(x, y, assetManager.getImage("darkMulti"));
@@ -919,5 +736,46 @@ class DarkShieldEnemy extends Alien {
   // Called when this enemy is destroyed
   onDestroy() {
     this.clearConnections();
+  }
+}
+
+class DarkBeamEnemy extends Alien {
+  constructor(x, y) {
+    super(x, y, assetManager.getImage("darkBeamEnemy"));
+    this.type = "darkBeam";
+    // Create the beam instance
+    this.beam = new Beam(
+      this.xPos + this.size / 2, // originX (center of enemy)
+      this.yPos + this.size / 2, // originY
+      0, // angle (will be set in update)
+      GAME_CONFIG.DARK_BEAM_LENGTH,
+      GAME_CONFIG.ICE_BEAM_WIDTH, // or a dark-specific width if you have one
+      assetManager.getImage("darkBeamMiddle"),
+      GAME_CONFIG.DARK_BEAM_DAMAGE,
+      GAME_CONFIG.DARK_BEAM_RANGE,
+      1000, // damage interval
+      assetManager.getImage("darkBeamStart"),
+      assetManager.getImage("darkBeamEnd")
+    );
+  }
+  update() {
+    this.move();
+    // Update beam origin to follow enemy
+    this.beam.originX = this.xPos + this.size / 2;
+    this.beam.originY = this.yPos + this.size / 2;
+    // Target the player
+    let player = gameManager.player;
+    if (player) {
+      let targetX = player.xPos + player.size / 2;
+      let targetY = player.yPos + player.size / 2;
+      this.beam.updateBeam(targetX, targetY);
+    }
+  }
+  draw() {
+    super.draw();
+    this.beam.drawBeam();
+  }
+  shouldShoot() {
+    return false;
   }
 }
