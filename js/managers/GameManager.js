@@ -518,10 +518,16 @@ class GameManager {
         bullet.applyGasDamage(this.player);
       }
 
+      if (bullet.type === "gasCanister") {
+        bullet.draw();
+        continue;
+      }
+
       // Restore regular enemy bullet collision and damage
       if (
         this.player &&
         !(bullet instanceof SawBladeBullet) &&
+        typeof bullet.checkCollision === "function" &&
         bullet.checkCollision(this.player)
       ) {
         // Skip damage if player is invincible

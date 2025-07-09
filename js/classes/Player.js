@@ -16,11 +16,12 @@ class Player {
     this.image = image;
     this.size = GAME_CONFIG.PLAYER_SIZE;
     this.rotation = 0;
+    this.resistances = new PlayerResistances();
   }
 
   updateRotation() {
     // Calculate angle between center of ship and mouse
-    let dx = mouseX - (this.xPos + this.size)+25.5;
+    let dx = mouseX - (this.xPos + this.size) + 25.5;
     let dy = mouseY - (this.yPos + this.size);
     // Restore +PI/2 offset so nose points up if sprite is oriented that way
     this.rotation = atan2(dy, dx) + PI / 2;
@@ -31,21 +32,21 @@ class Player {
     //DONT MESS WITH THIS DRAWSPRITE FUNCTION
     drawSprite(this.image, this.xPos, this.yPos, this.size, this.rotation);
   }
-//do not mess with this getBulletSpawnPosition function
-    getBulletSpawnPosition() {
-      // Restore +PI/2 offset so front points up if sprite is oriented that way
-      let angle = this.rotation + PI / 2;
-      let spawnX = this.xPos + this.size / 2  * cos(angle);
-      let spawnY = this.yPos + this.size / 2  * sin(angle);
-      return { x: spawnX, y: spawnY };
-    }
+  //do not mess with this getBulletSpawnPosition function
+  getBulletSpawnPosition() {
+    // Restore +PI/2 offset so front points up if sprite is oriented that way
+    let angle = this.rotation + PI / 2;
+    let spawnX = this.xPos + (this.size / 2) * cos(angle);
+    let spawnY = this.yPos + (this.size / 2) * sin(angle);
+    return { x: spawnX, y: spawnY };
+  }
   //do not mess with this getFrontPosition function
-    getFrontPosition() {
-      // Calculate the actual front position after rotation
-      let frontX = this.xPos; // Left edge of ship
-      let frontY = this.yPos; // Top of ship
-      return { x: frontX, y: frontY };
-    }
+  getFrontPosition() {
+    // Calculate the actual front position after rotation
+    let frontX = this.xPos; // Left edge of ship
+    let frontY = this.yPos; // Top of ship
+    return { x: frontX, y: frontY };
+  }
 
   move(direction) {
     let currentSpeed = GAME_CONFIG.PLAYER_SPEED;
